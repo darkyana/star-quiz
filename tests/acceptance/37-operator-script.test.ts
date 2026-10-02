@@ -248,7 +248,7 @@ describe('parseDatabaseName：从 wrangler.jsonc 读库名（脚本内零硬编�
         {
           "binding": "DB",
           "database_name": "star-quiz-sync", // 行尾注释
-          "database_id": "ff0b4173-4a63-429b-aea4-b58b45de8331"
+          "database_id": "00000000-0000-0000-0000-000000000000"
         }
       ]
     }`
