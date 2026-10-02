@@ -23,3 +23,7 @@ Keep UI styles consistent when editing or adding new frontend code. See `docs/ag
 ### Production DB (ops)
 
 Read-only lookups against production D1 (family usage) run `npx wrangler d1 execute --remote` inside `worker/`; all writes (issue/retire codes, passphrase) go through `tools/operator.mjs`. See `docs/agents/prod-db-queries.md`.
+
+### Gallery projection (public repo)
+
+`darkyana/star-quiz` is a curated public projection of this repo (ADR 0018). Develop only here (`star-quiz-studio`); sync the gallery exclusively via `node tools/gallery-sync.mjs` — never push it manually, never merge curation PRs without the owner. Real credentials never enter the repo. See `docs/frozen/2026-10-02-两仓制切换简报.md`.
