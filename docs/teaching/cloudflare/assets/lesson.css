@@ -1,0 +1,170 @@
+/* lesson.css — Cloudflare 教学工作区共享样式表（可复用组件）
+ * 所有课程与参考文档都引这一份，保证整个课程看起来是一门课。
+ * 无框架、无依赖；色彩全部走 :root 变量令牌。
+ * 组件：正文排版 / 站点图 .stations / 小测 .quiz（配合 quiz.js）。
+ */
+
+:root {
+  --bg: #fdfcf9;
+  --fg: #24292f;
+  --muted: #6e7781;
+  --accent: #b35900;        /* 强调：暖橙，呼应星星主题 */
+  --accent-soft: #fff3e6;
+  --correct: #1a7f37;       /* 小测答对 */
+  --correct-soft: #e6f4ea;
+  --wrong: #cf222e;         /* 小测答错 */
+  --wrong-soft: #ffebe9;
+  --line: #d8d4cc;
+  --card: #ffffff;
+  --future: #57632e;        /* 将来态标记（区别于现役） */
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  padding: 2rem 1.25rem 4rem;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
+  font-size: 17px;
+  line-height: 1.8;
+}
+
+main {
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
+h1, h2, h3 {
+  line-height: 1.35;
+  font-weight: 700;
+}
+h1 { font-size: 1.7rem; margin: 0 0 .4rem; }
+h2 { font-size: 1.3rem; margin: 2.4rem 0 .6rem; border-bottom: 1px solid var(--line); padding-bottom: .3rem; }
+h3 { font-size: 1.08rem; margin: 1.6rem 0 .4rem; }
+
+p { margin: .7rem 0; }
+
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+
+.lesson-meta {
+  color: var(--muted);
+  font-size: .88rem;
+  margin: 0 0 1.6rem;
+}
+
+/* 给「现役 / 将来」等时间态标签用的内联徽章 */
+.tag {
+  display: inline-block;
+  font-size: .78rem;
+  line-height: 1.5;
+  padding: 0 .5em;
+  border-radius: .4em;
+  vertical-align: .08em;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+.tag--now   { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.tag--future{ color: var(--future); border-color: var(--future); }
+
+/* ---------- 站点图（竖排站点列表） ---------- */
+.stations {
+  list-style: none;
+  margin: 1.2rem 0;
+  padding: 0;
+  counter-reset: station;
+}
+.stations > li {
+  counter-increment: station;
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: .6rem;
+  padding: .8rem 1rem .8rem 3.2rem;
+  margin: 0 0 .8rem;
+}
+.stations > li::before {
+  content: counter(station);
+  position: absolute;
+  left: 1rem;
+  top: .95rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  font-size: .85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 站与站之间的连线 */
+.stations > li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 1.72rem;
+  bottom: -0.85rem;
+  width: 2px;
+  height: .8rem;
+  background: var(--line);
+}
+.stations .station-name { font-weight: 700; }
+.stations .station-role { color: var(--muted); font-size: .92rem; }
+.stations li.is-future { border-style: dashed; }
+.stations li.is-future::before { background: transparent; color: var(--future); border-color: var(--future); }
+
+/* ---------- 小测（配合 assets/quiz.js） ---------- */
+.quiz {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: .6rem;
+  padding: 1rem 1.2rem;
+  margin: 1.2rem 0;
+}
+.quiz__prompt { font-weight: 700; margin: 0 0 .6rem; }
+.quiz__opts { display: grid; gap: .5rem; }
+.quiz__opt {
+  text-align: left;
+  font: inherit;
+  line-height: 1.6;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: .45rem;
+  padding: .5rem .8rem;
+  cursor: pointer;
+}
+.quiz__opt:hover:not(:disabled) { border-color: var(--accent); }
+.quiz__opt:disabled { cursor: default; opacity: .75; }
+.quiz__opt.is-correct { border-color: var(--correct); background: var(--correct-soft); color: var(--correct); opacity: 1; font-weight: 700; }
+.quiz__opt.is-wrong { border-color: var(--wrong); background: var(--wrong-soft); color: var(--wrong); opacity: 1; }
+.quiz__feedback { margin: .6rem 0 0; font-size: .95rem; display: none; }
+.quiz__feedback.is-visible { display: block; }
+.quiz__feedback.is-correct { color: var(--correct); }
+.quiz__feedback.is-wrong { color: var(--wrong); }
+
+/* ---------- 页脚提醒 ---------- */
+.reminder {
+  margin-top: 2.6rem;
+  padding: .9rem 1.1rem;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 0 .5rem .5rem 0;
+  font-size: .95rem;
+}
+
+/* ---------- 打印友好 ---------- */
+@media print {
+  body { background: #fff; font-size: 11.5pt; padding: 0; }
+  a { color: inherit; text-decoration: none; }
+  .quiz__opt { opacity: 1; }
+  .stations > li { break-inside: avoid; }
+  .quiz { break-inside: avoid; }
+  h2 { break-after: avoid; }
+}

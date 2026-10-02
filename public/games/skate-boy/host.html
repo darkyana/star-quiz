@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>滑板少年 · 独立接入试玩</title>
+  <style>
+    :root { color-scheme: dark; --bg: #081527; --ink: #f4f1e8; --muted: #a8b3cf; --accent: #ffd166; --space: 1rem; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: var(--space); min-height: 100dvh; background: var(--bg); color: var(--ink); font: 1rem/1.5 system-ui, sans-serif; }
+    main { max-width: 44rem; margin: auto; }
+    h1 { font-size: 1.4rem; margin: 0; }
+    p { color: var(--muted); }
+    button { padding: .75rem var(--space); font: inherit; border: none; border-radius: .75rem; color: var(--bg); background: var(--accent); cursor: pointer; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    iframe { display: block; width: 100%; height: 70dvh; border: none; margin-block: var(--space); }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>滑板少年 · 独立接入试玩</h1>
+    <p>开发验收页，不连接星星账本、不收费。每次重玩都要在此重新确认，用于验证嵌入生命周期，不是孩子首页入口。</p>
+    <p id="host-status" role="status">正在等待游戏就绪…</p>
+    <button id="authorize" type="button" disabled>确认试玩一局（不扣星）</button>
+    <iframe id="game" title="滑板少年试玩" data-src="./index.html"></iframe>
+    <p><a href="./index.html">独立打开游戏</a> · 本票尚未接入孩子首页，付费开局由后续宿主实现。</p>
+  </main>
+  <script type="module">
+    import { mountHost } from './host.js';
+    const dispose = mountHost(document, window);
+    window.addEventListener('pagehide', dispose, { once: true });
+  </script>
+</body>
+</html>

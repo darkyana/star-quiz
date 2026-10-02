@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>术语表 · Cloudflare 部署拼图（star_quest）</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+<main>
+
+<h1>术语表：Cloudflare 部署拼图</h1>
+<p class="lesson-meta">star_quest 教学 · 11 个词 · 打印友好</p>
+
+<p><strong>本表是什么、怎么用：</strong>这张表收的是 star_quest 部署拼图里会出现的 11 个词，每个词一句话讲「它管什么」，再讲「在 star_quest 里对应谁」——并区分<strong>现役</strong>（天天在跑）与<strong>将来</strong>（P0 落地后才上）。读课程遇到生词就来查；能不查表就分清两个词的分工，说明你已经有判断力了。</p>
+
+<h2>一、门牌与指路</h2>
+
+<dl>
+<dt>域名（Domain Name）</dt>
+<dd>网站的「门牌名」——人类好记的地址，背后由 DNS 翻译成机器用的 IP 地址。
+<br><strong>在 star_quest：</strong>现役，你在用的那个自定义域名（具体名字仓库没记，本文一律叫「你的自定义域名」）；将来同步请求也走它，一门牌多岔路。</dd>
+<dd><em>Avoid</em>: 网址（URL 包含域名，但还有协议和路径，不是一回事）</dd>
+
+<dt>DNS（Domain Name System）</dt>
+<dd>互联网的「电话簿」——把域名翻译成 IP 地址，让设备知道该把请求发给谁。
+<br><strong>在 star_quest：</strong>现役，孩子设备打开应用的第一步就是靠 DNS 找到你的域名指向的 Cloudflare 边缘；将来不变。</dd>
+<dd><em>Avoid</em>: 域名本身（DNS 是翻译系统，不是名字）</dd>
+
+<dt>自定义域（Custom Domain）</dt>
+<dd>把你自己买的域名挂到某个托管服务（如 Pages 项目）前面，替代服务商默认送的地址。
+<br><strong>在 star_quest：</strong>现役，你的域名挂在 Pages 项目上，孩子看到的始终是自家门牌，不是 <code>*.pages.dev</code> 默认地址。</dd>
+<dd><em>Avoid</em>: 子域名（那是域名下面再分级，如 shop.example.com，不是「自定义域」这个动作）</dd>
+</dl>
+
+<h2>二、路上接力</h2>
+
+<dl>
+<dt>CDN（Content Delivery Network）</dt>
+<dd>内容分发网络——把文件缓存在离用户近的世界各地服务器上，谁近谁递货，快且扛得住远距离。
+<br><strong>在 star_quest：</strong>现役，Cloudflare 边缘缓存应用静态文件，是大陆可达的功臣。</dd>
+<dd><em>Avoid</em>: 网盘（CDN 只管「递」缓存住的文件，不管存家底）</dd>
+
+<dt>代理（Proxy）</dt>
+<dd>替你出面收发请求的「前台」——用户不直接见源站，先见代理，由它转发、缓存、挡风。
+<br><strong>在 star_quest：</strong>现役，请求先进 Cloudflare 边缘（CDN 缓存 + 代理一体），边缘有货直接给、没货才回 Pages 拿。</dd>
+<dd><em>Avoid</em>: 翻墙代理（那是客户端侧的「正向代理」，Cloudflare 这种站在源站前的叫反向代理，方向相反）</dd>
+</dl>
+
+<h2>三、拼图部件（Cloudflare 产品）</h2>
+
+<dl>
+<dt>Pages</dt>
+<dd>Cloudflare 的静态站点托管——连上 GitHub 仓库，push 就自动构建发布，只管「发文件」不算业务逻辑。
+<br><strong>在 star_quest：</strong>现役，star-quiz 构建出的静态壳由 Pages 托管，push 到 main 即上线。</dd>
+<dd><em>Avoid</em>: 服务器（Pages 不跑你的后端代码，那是 Workers 的活）</dd>
+
+<dt>Worker</dt>
+<dd>Cloudflare 的边缘计算——在全球边缘节点上跑一小段你写的代码，按请求触发。
+<br><strong>在 star_quest：</strong>将来（P0 #119 未落），同步请求进门后的「门卫 + 账房」：验家庭码门禁、算增量合并。</dd>
+<dd><em>Avoid</em>: 后端服务器（Worker 无常驻进程，是随请求启停的一段代码）</dd>
+
+<dt>路由（Routes）</dt>
+<dd>一张匹配规则表——规定「哪种请求 URL 交给哪个 Worker 处理」，是进 Worker 前的分岔口。
+<br><strong>在 star_quest：</strong>将来，把同步类请求（如 <code>/api/sync</code> 一类）从取文件的请求里分出来、送进同步 Worker。</dd>
+<dd><em>Avoid</em>: 路由器（网络设备，跟这张规则表没关系）</dd>
+
+<dt>D1</dt>
+<dd>Cloudflare 的 SQL 数据库——账本式存储，能查询、能汇总、能导出标准 SQL。
+<br><strong>在 star_quest：</strong>将来，云端汇合点：存星星流水、答题记录等当前态，配每日快照当后悔药。</dd>
+<dd><em>Avoid</em>: 云盘备份（D1 是能查询的数据库，不是一份文件拷贝）</dd>
+
+<dt>KV（Workers KV）</dt>
+<dd>读多写少的快速键值缓存——按 key 存取小块数据，图快不图账目严谨。
+<br><strong>在 star_quest：</strong>不在锁定栈——分得清即可：star_quest 的数据是账本式的，归 D1 管，没用 KV。</dd>
+<dd><em>Avoid</em>: 拿 KV 泛指「Cloudflare 存储」（KV 只是其中一种，与 D1 分工不同）</dd>
+
+<dt>Cron（Cron Triggers）</dt>
+<dd>定时闹钟——按时间表自动触发 Worker 干活，不需要有人发请求。
+<br><strong>在 star_quest：</strong>将来，每日给 D1 拍一次快照、保留 30 天，误操作靠它整包回滚。</dd>
+<dd><em>Avoid</em>: Cron 就等于快照（Cron 只管「定时叫人」，快照是那次被叫起来干的活）</dd>
+</dl>
+
+<p class="reminder">词条看不懂或觉得哪里不对？随时问你的 AI 老师（用 teach 技能按需续课），学过之后这张表会随你的理解一起修订。</p>
+
+</main>
+</body>
+</html>

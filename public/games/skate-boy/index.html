@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101026">
+  <title>滑板少年 · 霓虹街区</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <div><span class="eyebrow">NEON NIGHT RUN</span><h1>滑板少年</h1></div>
+      <div class="tools">
+        <button id="sound" aria-pressed="false" aria-label="切换静音">声音：待触摸</button>
+        <button id="pause" disabled>暂停</button>
+        <button id="exit">退出</button>
+      </div>
+    </header>
+    <section class="hud" aria-label="本局状态">
+      <div><span>游戏分数</span><strong id="score">0</strong></div>
+      <div><span>连击 <b id="multiplier">×1</b></span><strong id="combo">0</strong></div>
+      <div><span>剩余生命</span><strong id="lives" aria-label="3条命">♥ ♥ ♥</strong></div>
+      <div><span>本机最高</span><strong id="best">0</strong></div>
+    </section>
+    <section class="stage" aria-label="三车道滑板游戏">
+      <canvas id="track" tabindex="0" aria-label="左右滑动换道，或点按目标车道，躲开路障，接星星。">请使用支持 Canvas 的浏览器。</canvas>
+      <div class="track-label" aria-hidden="true">霓虹街区 <span id="pace">轻松滑行</span></div>
+      <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+      <section id="overlay" class="overlay" aria-labelledby="panel-title">
+        <div class="panel">
+          <div class="board-badge" aria-hidden="true">✦</div>
+          <p id="mode" class="eyebrow">独立试玩 · 不消耗答题星星</p>
+          <h2 id="panel-title">一起滑进夜色</h2>
+          <p id="panel-copy">左右滑动换道，或点按目标车道。躲路障、接星星，连续接到第 3 颗起双倍计分！</p>
+          <p id="result" class="result" hidden></p>
+          <p class="legend"><span>★ 接星得分</span><span>▧ 路障扣命</span><span>♥ 三条命</span></p>
+          <button id="action" class="primary">触摸出发</button>
+          <p class="fine-print">这里的星星只算游戏分数，不增加答题星星余额。</p>
+        </div>
+      </section>
+    </section>
+    <footer><span>← 滑动 / 点按车道 →</span><span id="duration">00:00</span></footer>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

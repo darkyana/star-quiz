@@ -1,0 +1,212 @@
+/* 组件级全局样式集（#41，2026-08-29 老板拍板）：variables.css 保持纯令牌，组件化样式归本文件 */
+
+/* .star-container：统一「白底 + 灰描边」内容承载区，供各页面直接调用，避免各处容器样式不一致
+   明确不含：margin（间距属页面布局职责）/ flex / 对齐 / 状态色（使用处各自负责，如开关卡 .is-on 局部覆盖） */
+.star-container {
+  /* border-box：项目无全局 reset（#33），使用处常见 width:100%（如家长页卡片）——content-box 下
+     padding + 描边会额外撑出 35px（#52 后 .parent-main 为滚动容器，溢出外露为横向滚动），此处收口 */
+  box-sizing: border-box;
+  background-color: var(--color-surface);
+  border: var(--border-thin) solid var(--color-outline);
+  border-radius: var(--radius-lg);
+  padding: var(--space-gutter);
+  /* #152 G12 发光探针档：卡片唇边极淡光（探针手机框 inset 直译，米白 α 0.06——
+     深底卡片顶部一道极淡高光，浅色面不可见；使用处自有 box-shadow 时按声明顺序叠后段） */
+  box-shadow: var(--glow-edge);
+}
+
+/* .balance-chip：余额展示胶囊（自 App.vue 迁入，Home / Redeem / StarLog 三页共用样式集）
+   非交互元素：无阴影（AC-R15-3-1）；间距归入 scale 4/8/12/16/20/24（AC9-4） */
+.balance-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: transparent;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-num);
+  font-weight: 800;
+  color: var(--color-star);
+}
+
+/* .safety-banner：数据安全持续横幅（#174，App.vue 外壳宿主、全页共享）：升级前恢复副本落定失败 /
+   云端同步协议不兼容两类持续异常态的常显提示（role=alert），故障解除自动消失。
+   形态沿用 star-container 内容承载（白底灰描边圆角）+ 提示字号；间距归宿主 App.vue
+   明确不含：交互（纯展示） */
+.safety-banner {
+  box-sizing: border-box;
+  margin: var(--space-sm) var(--space-page) 0;
+  padding: var(--space-sm) var(--space-gutter);
+  background-color: var(--color-surface);
+  border: var(--border-thin) solid var(--color-outline);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-info);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* .config-link：低调超链接入口（caption/600/下划线，触控区 ≥ 44px，L3）——Home 页脚「配置」家长入口 +
+   Parent 组件库入口两页共用（2026-09-03 自 Home.vue scoped 收编，防两处漂移）
+   明确不含：容器定位/间距（使用处页面负责） */
+.config-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-sm);
+  min-height: var(--touch-sm);
+  padding: 0 var(--space-sm);
+  font-size: var(--font-size-caption);
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: underline;
+}
+
+/* .bottom-action-bar：页面级主操作底栏（答题/编辑提议/结果页，ADR 0001 一屏三段之三，#68 收编）
+   明确不含：内部按钮排布与间距（页面各自负责） */
+.bottom-action-bar {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-gutter) var(--space-page) var(--space-md);
+}
+
+/* .page-scroll：内容区唯一滚动容器（ADR 0001 一屏三段之中段，#68 收编），四件套保证 flex 收口且滚动链不外传
+   明确不含：页面特有布局声明（display/padding 等留各页）与操作页三件套变体（edit/result 滚动块无 overscroll-behavior: contain，不适用本样式集） */
+.page-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* .paste-input：粘贴导入文本域输入控件（#212，2026-09-08 自 Parent.vue scoped 升格跨页样式集——
+   设计统一性规则 2：第二个页面复用同一输入控件视觉模式，与 QuestionPrompt 页文本域输入控件块逐行相同，
+   收口本文件防两处漂移）；颜色/字号/圆角/描边全令牌引用，零硬编码零新令牌 */
+.paste-input {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: var(--space-base) var(--space-sm);
+  font-family: inherit;
+  font-size: var(--font-size-body);
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: var(--color-surface-dim);
+  border: var(--border-thin) solid var(--color-outline);
+  border-radius: var(--radius-md);
+  resize: vertical;
+}
+
+.paste-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* .mode-switch：通用开关控件（#77 首用于超能力卡；#236 2026-09-11 自 SuperPowerCard.vue scoped 升格
+   跨页样式集——设计统一性规则 2：家长页惊喜题库入口开关卡复用同一开关视觉模式，收口本文件防两处漂移）：
+   触控命中区走 --touch-sm，槽 + 白色圆滑块，左关右开；开启态主蓝（中性系），
+   hover / active / focus-visible 全套交互态随迁；颜色/尺寸/圆角/时长全令牌引用，零硬编码零新令牌。
+   明确不含：卡内布局与间距（使用处页面负责）；对状态色的局部覆盖是契约内合法行为 */
+.mode-switch {
+  position: relative;
+  border: 0;
+  padding: 0;
+  min-width: var(--touch-sm);
+  min-height: var(--touch-sm);
+  background-color: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.switch-track {
+  display: inline-flex;
+  align-items: center;
+  width: 52px;
+  height: 30px;
+  padding: 3px;
+  background-color: var(--color-surface-dim);
+  border: var(--border-thin) solid var(--color-outline);
+  border-radius: var(--radius-full);
+  transition:
+    background-color var(--duration-base) ease,
+    border-color var(--duration-base) ease;
+}
+
+.switch-thumb {
+  width: 22px;
+  height: 22px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-full);
+  box-shadow: 0 var(--shadow-xs) 0 var(--color-surface-shadow);
+  transition: transform var(--duration-base) ease;
+}
+
+/* 左关右开：开启时滑块右移（开启态主蓝，中性系） */
+.mode-switch[aria-checked='true'] .switch-track {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary-shadow);
+}
+
+.mode-switch[aria-checked='true'] .switch-thumb {
+  transform: translateX(22px);
+}
+
+@media (hover: hover) {
+  .mode-switch:hover .switch-track {
+    border-color: var(--color-primary);
+  }
+}
+
+.mode-switch:active .switch-thumb {
+  transform: scale(0.92);
+}
+
+.mode-switch:active[aria-checked='true'] .switch-thumb {
+  transform: translateX(22px) scale(0.92);
+}
+
+.mode-switch:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-full);
+}
+
+/* ===== #158 R-宽档控件封顶（跨页结构类归宿）=====
+   宽度上限是控件固有属性，但清单内为跨页结构类（各页 scoped 类名），规则统一收编本样式集；
+   仅 ≥600 视口生效（复用外壳同一张 600/1024 断点表，不引入容器查询、不加新断点），
+   手机档（<600）渲染零变化——封顶声明只出现在本媒体块内；高度与触控热区（md 56 / 44 底线）不动。
+   封顶清单（票内拍板）：
+   - 表单输入行：QuestionPrompt 页 prompt-input / prompt-textarea / prompt-output、
+     ProposalEdit 页 form-name-input / form-price-input / form-desc-input、
+     Pair 页 pair-code-input / pair-name-input / pair-passphrase-input（#192 口令输入同形态入组）
+   - 内容卡：Prizes 页 prize-card（奖品聚合格卡，#295 起两列格卡，封顶规则沿用）、
+     Proposals 页 proposal-card（提议卡）、ProposalDetail 页 detail-fields（提议详情）
+   清单外（次要按钮 / 文字链 / 图标钮，本就不满宽）不入；大按钮（large 尺寸档全变体）与组件化行卡
+   （StarOptionRow，#199 迁出清单；StarRewardItem，#202 迁出清单）封顶在组件自身样式
+   居中健壮性（#158 修复 2）：input / textarea / button 默认 inline-level，auto 边距在非 flex 宿主下不居中——
+   显式块级化使居中只依赖本规则；页内 scoped 更高特异性的 display（如卡片 flex 布局）照常胜出，布局不受影响
+   等宽修复（2026-09-09）：input / textarea 是内容收缩元素，display: block 不会撑满；flex 宿主下 cross 轴 auto
+   边距又会让 stretch 失效——两者都退回按内容定宽，同表单各输入框宽度漂移。显式 width: 100%（封顶前满宽、
+   封顶后统一 480 居中）+ border-box（padding/描边不外溢，star-container 卡片本就 border-box 幂等）收口 */
+@media (min-width: 600px) {
+  .prompt-input,
+  .prompt-textarea,
+  .prompt-output,
+  .form-name-input,
+  .form-price-input,
+  .form-desc-input,
+  .pair-code-input,
+  .pair-name-input,
+  .pair-passphrase-input,
+  .prize-card,
+  .proposal-card,
+  .detail-fields {
+    box-sizing: border-box;
+    width: 100%;
+    display: block;
+    max-width: var(--control-max-width);
+    margin-inline: auto;
+  }
+}

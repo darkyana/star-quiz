@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<!-- 小红书小工具打包专用入口（tools/build-minitool.mjs 消费）：与产品 index.html 的差异——
+     无 manifest / PWA meta；构建为 IIFE 经典脚本（禁 type="module"），script 标签由打包脚本后处理。
+     不作为产品入口，日常 dev/build 不经过本文件 -->
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>星星答题</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

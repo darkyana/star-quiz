@@ -1,0 +1,24 @@
+# A top-level 404.html disables Pages' implicit catch-all SPA fallback.
+# Only known page routes may serve the shell. Never add /* or /assets/* here.
+# Normal app links use /#/... and request /, so they need no rewrite.
+/quiz /index.html 200
+/result /index.html 200
+/redeem /index.html 200
+/parent /index.html 200
+/parent/family /index.html 200
+/parent/question-prompt /index.html 200
+/parent-guide /index.html 200
+/pair /index.html 200
+/pair-wait /index.html 200
+/star-log /index.html 200
+/prizes /index.html 200
+/components /index.html 200
+/components/:componentKey /index.html 200
+/proposals /index.html 200
+/proposals/new /index.html 200
+/proposals/:id/edit /index.html 200
+/proposals/:id /index.html 200
+/child/proposals /index.html 200
+/child/proposals/new /index.html 200
+/child/proposals/:id/edit /index.html 200
+/child/proposals/:id /index.html 200

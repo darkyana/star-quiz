@@ -1,0 +1,32 @@
+{
+  "status": "visual-direction-approved-playable-review-pending",
+  "style": "premium tabletop toy / orthographic top view / upper-left soft light",
+  "anchorConvention": "normalized center; render bounds are not collision bounds",
+  "runtimeBytes": 1907516,
+  "runtimeBase": "../../../../../public/games/mini-garage-prototype/art-assets/track-kit/",
+  "assets": [
+    {"file":"car-road-boost.png","width":296,"height":400,"anchor":[0.5,0.5],"role":"car","tire":"road","gadget":"boost"},
+    {"file":"car-road-jump.png","width":296,"height":400,"anchor":[0.5,0.5],"role":"car","tire":"road","gadget":"jump"},
+    {"file":"car-offroad-boost.png","width":296,"height":400,"anchor":[0.5,0.5],"role":"car","tire":"offroad","gadget":"boost"},
+    {"file":"car-offroad-jump.png","width":296,"height":400,"anchor":[0.5,0.5],"role":"car","tire":"offroad","gadget":"jump"},
+    {"file":"barrier.png","width":392,"height":130,"anchor":[0.5,0.5],"role":"obstacle"},
+    {"file":"ramp.png","width":280,"height":380,"anchor":[0.5,0.5],"role":"ramp","forward":"up","placement":"rotate towards same lane on band","shadow":"renderer projects upper-left light using varying wedge height"},
+    {"file":"slow-strip.png","width":520,"height":160,"anchor":[0.5,0.5],"role":"slow-band","placement":"open ends; overscan and clip to full road width after rotation"},
+    {"file":"curb.png","width":72,"height":392,"anchor":[0.5,0.5],"role":"visual-road-edge-not-new-collider"},
+    {"file":"surface-road.webp","width":512,"height":512,"role":"repeating-texture","repeat":"xy-mirrored-edges"},
+    {"file":"surface-sand.webp","width":512,"height":512,"role":"repeating-texture","repeat":"xy-mirrored-edges"},
+    {"file":"surface-gravel.webp","width":512,"height":512,"role":"repeating-texture","repeat":"xy-mirrored-edges"},
+    {"file":"surface-wood.webp","width":512,"height":512,"role":"repeating-texture","repeat":"xy-mirrored-edges"},
+    {"file":"icon-boost.png","width":128,"height":128,"role":"gadget-icon"},
+    {"file":"icon-jump.png","width":128,"height":128,"role":"gadget-icon"},
+    {"file":"shadow.svg","width":128,"height":160,"role":"separate-ground-shadow"},
+    {"file":"boost-flame.svg","width":128,"height":160,"role":"separate-boost-effect"},
+    {"file":"landing-ring.svg","width":160,"height":100,"role":"separate-landing-effect"},
+    {"file":"finish-line.svg","width":256,"height":48,"role":"track-marking"}
+  ],
+  "originals": [
+    {"file":"originals/cars.png","sha256":"a34de58fc1437e13938478cff8710411aca9caca7f7a3bd091b4d45faac1d144","source":"AI generated, unmodified"},
+    {"file":"originals/components.png","sha256":"7f2546f892380846f2c146810862f2bd45a098a6818097bcbed1037cdd91725b","source":"AI generated, unmodified"},
+    {"file":"originals/materials.png","sha256":"7e451c02a2b4b3acfef34175fd22d91c98925ebfc251f98149844f14a0289dbb","source":"AI generated, unmodified"}
+  ]
+}

@@ -1,0 +1,7 @@
+/* 延续仓库现有教学视觉；共享排版、站点图与测验组件。 */
+@import url("../../cloudflare/assets/lesson.css");
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+code, a { overflow-wrap: anywhere; }
+summary { cursor: pointer; }
+details { margin: 1rem 0; }
+@media print { details > * { display: block; } }

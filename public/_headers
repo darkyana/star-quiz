@@ -1,0 +1,3 @@
+# Revalidate the shell and errors; do not cache asset misses as immutable.
+/*
+  Cache-Control: no-cache, must-revalidate

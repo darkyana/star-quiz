@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 1 课 · 一次答题请求的旅行</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+<main>
+
+<h1>第 1 课：一次答题请求的旅行</h1>
+<p class="lesson-meta">约 5–10 分钟 · 单一收获：一张站点地图 · 生词查 <a href="../reference/glossary.html">术语表</a></p>
+
+<p><strong>这一课只教你一件事：</strong>孩子点开应用到页面出现（以及将来的数据同步），路上每一站是谁、Cloudflare 各产品各管哪一段。学完你手里就有一张地图——以后 AI 说「我们改一下 DNS 记录」或「在 Worker 里加个门禁」，你能立刻定位它在动哪块拼图。</p>
+
+<p>先交代一个容易误解的事实：<strong>答题本身不出网。</strong>star_quest 是本地优先的应用，孩子每一题的对错、每一颗星星，都记在设备本地的 localStorage 里，断网也照常答题。那联网是为了什么？取「应用壳」——应用的页面和代码文件。这条路，才是今天要走的路。</p>
+
+<h2>现在这条路：取应用壳 <span class="tag tag--now">现役</span></h2>
+
+<p>孩子 iPad 主屏上的图标，本质是一个指向你域名的入口。点开图标，设备要去「取应用文件」，于是上路：</p>
+
+<ol class="stations">
+  <li>
+    <span class="station-name">孩子的 iPad（出发点）</span><br>
+    <span class="station-role">发起者：点开主屏图标，设备准备向你的自定义域名要应用文件</span>
+  </li>
+  <li>
+    <span class="station-name">DNS（指路牌）</span><br>
+    <span class="station-role">管「翻译域名」：把你的域名翻译成 IP 地址，好知道该把请求发给谁（<a href="https://www.cloudflare.com/learning/dns/what-is-dns/">DNS 是什么</a>）</span>
+  </li>
+  <li>
+    <span class="station-name">Cloudflare 边缘（大陆可达的功臣）</span><br>
+    <span class="station-role">管「就近递货」：CDN 缓存 + 代理一体——文件在边缘有缓存就直接给，没有才回源去拿（<a href="https://www.cloudflare.com/learning/cdn/what-is-a-cdn/">CDN 是什么</a>）</span>
+  </li>
+  <li>
+    <span class="station-name">Cloudflare Pages（仓库兼发货员）</span><br>
+    <span class="station-role">管「吐静态文件」：GitHub 仓库 star-quiz 一 push 到 main，Pages 就自动构建发布，边缘从这里进货（<a href="https://developers.cloudflare.com/pages/">Pages 文档</a>）</span>
+  </li>
+  <li>
+    <span class="station-name">回到 iPad 本地（应用壳跑起来）</span><br>
+    <span class="station-role">管「答题与记账」：应用在本地运行，星星流水写进 localStorage，不再出网</span>
+  </li>
+</ol>
+
+<p>一句话版：<strong>点开图标 → DNS 指路 → Cloudflare 边缘递货 → Pages 是仓库 → 壳在本地跑。</strong>这条「客户端—服务器一来一回」的路是所有网页的底模，MDN 的 <a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Getting_started/Web_standards/How_the_web_works">How the web works</a> 把它讲得最全，推荐作为本课的第一手读物。</p>
+
+<div class="quiz" data-quiz="1"></div>
+<div class="quiz" data-quiz="2"></div>
+<div class="quiz" data-quiz="3"></div>
+<div class="quiz" data-quiz="4"></div>
+
+<h2>将来多出的岔路：数据同步 <span class="tag tag--future">将来（P0 未落）</span></h2>
+
+<p>现在这条路只走「取壳」。等 P0 实施票落地，会在同一个域名下多出一条岔路：<strong>同步请求</strong>——多设备各自的答题记录、星星流水要汇到云端（云端做汇合点而非真相源，离线照常可用），于是路上多几站：</p>
+
+<ol class="stations">
+  <li class="is-future">
+    <span class="station-name">同步请求（从应用里发出）</span><br>
+    <span class="station-role">管「带账上路」：写入即推增量、冷启动全量拉合，走的还是你的域名</span>
+  </li>
+  <li class="is-future">
+    <span class="station-name">路由（Routes，分岔口）</span><br>
+    <span class="station-role">管「分拣」：按请求长什么样，把同步请求从取文件的请求里分出来，送进 Worker（<a href="https://developers.cloudflare.com/workers/configuration/routing/">路由文档</a>）</span>
+  </li>
+  <li class="is-future">
+    <span class="station-name">Worker（门卫兼账房）</span><br>
+    <span class="station-role">管「验票和合并」：验家庭码门禁，算各设备记录怎么合并成一份账（<a href="https://developers.cloudflare.com/workers/">Workers 文档</a>）</span>
+  </li>
+  <li class="is-future">
+    <span class="station-name">D1（云端账本）</span><br>
+    <span class="station-role">管「记账」：星星流水、答题记录的云端当前态落库（<a href="https://developers.cloudflare.com/d1/">D1 文档</a>）</span>
+  </li>
+  <li class="is-future">
+    <span class="station-name">Cron（每日闹钟）</span><br>
+    <span class="station-role">管「后悔药」：每天给 D1 拍一次快照、留 30 天，误操作可整包回滚（<a href="https://developers.cloudflare.com/workers/configuration/cron-triggers/">Cron Triggers</a>）</span>
+  </li>
+</ol>
+
+<p>注意分工：取壳这条路和同步这条岔路，起点都是你的域名，但中间各站不同——前者终点是 Pages（只发文件），后者终点是 D1（记账）。分得清这两条路，你就有了评估任何部署方案的地基。11 个词的分工速查见<a href="../reference/glossary.html">术语表</a>。</p>
+
+<div class="quiz" data-quiz="5"></div>
+
+<h2>本课收尾</h2>
+
+<p><strong>单一收获自查：</strong>不看上文，你能复述「现在这条路」的五站吗？能说出同步岔路比取壳多经过哪几站吗？说得出，这课就到手了。</p>
+
+<p><strong>第一手读物（primary source）：</strong>MDN 的 <a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Getting_started/Web_standards/How_the_web_works">How the web works</a>——客户端/服务器、DNS、HTTP 一站讲全，是本课地图的权威底图。想深挖某个词，再按 <a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Web_mechanics/What_is_a_domain_name">域名</a>、DNS、CDN 各自的官方科普顺藤摸瓜。</p>
+
+<p class="reminder">有任何不清楚的，随时问你的 AI 老师（用 teach 技能按需续课）——地图上哪一站模糊，就点名补哪一站。</p>
+
+</main>
+
+<script src="../assets/quiz.js"></script>
+<script>
+renderQuiz(document.querySelector('[data-quiz="1"]'), {
+  prompt: '① 孩子刚点开应用、页面还没出来。设备最先进行的动作是什么？',
+  options: [
+    '把答题成绩先打包上传，好让云端提前记账',
+    '向 Pages 申请使用授权，好确认这是正版应用',
+    '把你的域名翻译成 IP，好知道请求发给谁',
+    '在本地翻一遍 localStorage，好找出上次答题进度'
+  ],
+  answer: 2,
+  explain: '先「查地址」才能「发货」——DNS 就是互联网的电话簿。'
+});
+
+renderQuiz(document.querySelector('[data-quiz="2"]'), {
+  prompt: '② 请求发往你的域名后，实际收下它的是谁？大陆能稳定打开应用靠的是谁？',
+  options: [
+    'Cloudflare 边缘节点，缓存加代理一体',
+    'GitHub 的构建机器，编译加发布一体',
+    '孩子 iPad 的本机存储，记账加计算一体',
+    '域名注册商的服务器，解析加转发一体'
+  ],
+  answer: 0,
+  explain: 'DNS 把域名指到 Cloudflare 边缘——CDN 缓存与代理都在这一站，大陆可达的功臣。'
+});
+
+renderQuiz(document.querySelector('[data-quiz="3"]'), {
+  prompt: '③ 应用页面能打开。Pages 在这条路上管的是哪一段？',
+  options: [
+    '验家庭码门禁这一段，挡住没配对的设备',
+    '算星星流水余额这一段，本地实时求和',
+    '拍每日数据快照这一段，保留可回滚副本',
+    '吐出静态文件这一段，push 即自动发布'
+  ],
+  answer: 3,
+  explain: 'Pages 只管「发文件」；门禁、合并、快照是将来 Worker、D1、Cron 的事。'
+});
+
+renderQuiz(document.querySelector('[data-quiz="4"]'), {
+  prompt: '④ 孩子答对一题、得了一颗星。这笔记账此刻存在哪里？',
+  options: [
+    '云端的 D1 数据库，答完即传云端记账',
+    '本机的 localStorage，答完即记不出网',
+    'Pages 的静态文件，答完写入随站点分发',
+    '边缘的 KV 缓存里，答完暂存按批上传'
+  ],
+  answer: 1,
+  explain: 'star_quest 本地优先——答题记账在本地完成，现役这条路只走「取应用壳」。'
+});
+
+renderQuiz(document.querySelector('[data-quiz="5"]'), {
+  prompt: '⑤ 将来同步上线后，同步请求在路上多经过的岔路是哪条？',
+  options: [
+    'DNS 分岔进 Cron，定时汇总后写进 KV',
+    '代理分岔进 Pages，构建发布后回 GitHub',
+    '路由分岔进 Worker，验码合并后写 D1',
+    '边缘分岔进自定义域，翻译地址后写本机'
+  ],
+  answer: 2,
+  explain: '同步请求由路由交给 Worker（门禁+合并），账本落 D1；Cron 另走定时快照，KV 不在锁定栈。'
+});
+</script>
+
+</body>
+</html>

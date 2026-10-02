@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>第一课：多一个 module，就更好吗？</title><link rel="stylesheet" href="../assets/lesson.css"></head><body><main>
+<h1>多一个 module，就更好吗？</h1>
+<p class="lesson-meta">第一课 · 约 6 分钟 · 不需要读代码 · <a href="../reference/glossary.html">架构判断速查表</a></p>
+<p>AI 说：“这里有点复杂，我建议再拆一个 module。”你不必立刻赞成或反对。今天只学会追问一句：<strong>拆完以后，谁少操心了什么？</strong></p>
+<h2>先看你自己的 App</h2>
+<p>家长和孩子商量好一个兑换项后，家长按“发布兑换项”。屏幕上的一个动作，内部有几方合作。下面是<strong>当前代码的简化调用图</strong>，不是改造建议，也不是完整 App 架构。</p>
+<ol class="stations">
+<li><span class="station-name">提议板页面：接住点击</span><br>告诉发布功能“发布这条提议”；调用结束后重新读取列表。</li>
+<li><span class="station-name">发布功能：组织这件事</span><br>找到提议，询问发布门禁；通过校验后，追加兑换项，再保存提议的“已发布”状态。</li>
+<li><span class="station-name">状态规则：回答能不能发布</span><br>检查是否已经结束，以及家长、孩子是否都同意。它负责判断，不负责画按钮，也不负责保存。</li>
+</ol>
+<p><strong>读图提示：</strong>发布功能会先询问状态规则，得到答案后才继续写入。图中是职责和调用关系，不是“第一步存好，第二步再检查”。发布按钮显示时也会使用同一套门槛判断；真正执行发布时还会重新检查。</p>
+<h2>Module 不是“一个文件夹”</h2>
+<p><strong>Module 是一块有对外约定、也有内部做法的代码。</strong>今天我们缩小镜头，把“发布功能”当作一个 module 观察；它只是所在文件的一部分。</p>
+<ul><li><strong>Interface（对外约定）：</strong>正常调用时告诉它提议编号；它尝试发布，返回成功或拒绝原因。调用者仍要理解“发布会新增兑换项，并结束该提议”。</li><li><strong>Implementation（内部做法）：</strong>去哪找提议、怎样询问规则、怎样追加兑换项、怎样保存状态。</li></ul>
+<p>这里的 interface 不是屏幕界面。调用者就是“使用这块代码的其他代码”，本例中是提议板页面。好处不在于页面少写几行，而在于<strong>页面不必自己安排整套发布手续</strong>。</p>
+<h2>对比两种方案</h2>
+<p>以下是教学假设，不是说 repo 目前存在方案甲。</p>
+<h3>甲：页面亲自办手续</h3><p>页面自己判断双方同意、排除已作废和已发布、追加兑换项、更新提议。将来别的入口也能发布时，又得正确安排同一套手续。</p>
+<h3>乙：页面委托发布功能</h3><p>页面提交提议编号，由发布功能安排手续。其他入口使用同一能力，不必抄一套。现有代码在这件事上采用了这个方向。</p>
+<p>乙的价值是<strong>把需要一起知道的细节集中起来</strong>。这与 <a href="https://www.cs.lafayette.edu/~gexia/cs301/resources/parnas.html">Parnas 的信息隐藏原则</a>一致：划分 module 应考虑隐藏什么设计决策，而不是把每个执行步骤都拆成一个。</p>
+<p>这也给“深 module”一个直觉：<strong>使用者学会少量约定，就能办成一件有分量的事。</strong>不是把代码写长，也不是把不相干的能力全放进去。本课只看这一处收益，不给整个文件评“深浅分”。</p>
+<h2>轮到你拍板</h2>
+<div class="quiz" data-quiz aria-label="Module 判断练习" aria-live="polite"></div>
+<noscript><p>请思考：AI 说“再包一层发布助手，只转交同样的编号、返回同样的结果，其他什么都不做”，仅凭文件更短值得做吗？可回聊天回答。</p></noscript>
+<details><summary>打印版答案与解释</summary><p>选“先问调用者少懂什么”。仅转交通常没有展示出收益，但若有真实兼容需求或需隔离外部变化，薄薄一层也可能有价值。先索要证据，不机械禁止。</p></details>
+<h2>带走一个评审问题</h2><p><strong>“请用拆分前后的对比告诉我：调用者不再需要知道什么？如果没有少操心，它解决的具体问题是什么？”</strong></p>
+<p>明天不看教材，用自己的话复述一次；下次我们再拿另一个业务动作检验这句话，避免只记住这个例子的答案。</p>
+<details><summary>代码证据与本课刻意省略的地方</summary><ul>
+<li><a href="../../../../src/pages/Proposals.vue">Proposals.vue</a>：159–168 行，点击发布及按钮条件。</li>
+<li><a href="../../../../src/composables/useProposals.ts">useProposals.ts</a>：166–187 行，门禁与发布组织。</li>
+<li><a href="../../../../src/utils/proposalState.ts">proposalState.ts</a>：20–46 行，状态推导与发布门槛。</li>
+</ul><p>这是源码现状，不是完美设计：页面目前没有使用发布返回的成功或拒绝结果。发布还有可选校验参数，正常页面没传。追加兑换项与保存提议是两次顺序操作，本课没有证明它们在异常时能一起回滚；也没有把按钮隐藏当成完整安全授权。云同步不在这张图的范围内。</p></details>
+<h2>推荐原始资料</h2><p><a href="https://www.cs.lafayette.edu/~gexia/cs301/resources/parnas.html">Parnas：On the Criteria To Be Used in Decomposing Systems into Modules</a>。只看 The Criteria 和 Conclusion 即可；不要求读懂例子里的代码。核心问题：按工作步骤拆，还是按应该集中掌握的知识拆？英文难懂可以让我逐段讲。</p>
+<p class="reminder">有不清楚的地方，直接回聊天问我。不用先学会编程再问架构。下一课会依据你的解释决定进度；读过本页不等于已经掌握。</p>
+<p><a href="../reference/glossary.html#questions">打开评审速查表</a></p>
+</main><script src="../../cloudflare/assets/quiz.js"></script><script>
+renderQuiz(document.querySelector('[data-quiz]'), {
+ prompt: 'AI 建议增加“发布助手”：只转交同样的编号、返回同样的结果，没有新规则或兼容需求。它说这样文件更短。你首先怎么回应？',
+ options: ['先问调用者少懂什么', '只要文件变短就批准', '只要增加层数就否决'],
+ answer: 0,
+ explain: '关键是新增 module 的收益与成本。仅转交尚未展示收益；但真实兼容或隔离变化的需求可能让薄层有价值，不能只凭层数裁决。'
+});
+</script></body></html>

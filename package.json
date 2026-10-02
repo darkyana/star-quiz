@@ -1,0 +1,31 @@
+{
+  "name": "star-quiz",
+  "version": "0.14.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "build:minitool": "node tools/build-minitool.mjs",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:pages": "node tools/test-pages.mjs",
+    "typecheck": "vue-tsc --noEmit",
+    "lint": "npm run typecheck"
+  },
+  "dependencies": {
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/test-utils": "^2.4.6",
+    "happy-dom": "^20.14.0",
+    "typescript": "~5.6.3",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.8",
+    "vue-tsc": "^2.1.10",
+    "wrangler": "4.128.0"
+  }
+}

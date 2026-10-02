@@ -1,0 +1,46 @@
+[
+  {
+    "viewport": 390,
+    "car": {
+      "x": 326,
+      "y": 176,
+      "width": 44,
+      "height": 44
+    },
+    "surprise": {
+      "x": 270,
+      "y": 176,
+      "width": 44,
+      "height": 44
+    },
+    "balance": {
+      "x": 139,
+      "y": 176,
+      "width": 112,
+      "height": 112
+    },
+    "overflow": false
+  },
+  {
+    "viewport": 1280,
+    "car": {
+      "x": 956,
+      "y": 176,
+      "width": 44,
+      "height": 44
+    },
+    "surprise": {
+      "x": 900,
+      "y": 176,
+      "width": 44,
+      "height": 44
+    },
+    "balance": {
+      "x": 583.984375,
+      "y": 176,
+      "width": 112,
+      "height": 112
+    },
+    "overflow": false
+  }
+]

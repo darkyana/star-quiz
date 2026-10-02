@@ -1,0 +1,187 @@
+/* 设计令牌（Spec REQ-6 / #146 星夜童话全量夜幕换装，基准 = 探针 P1-r2 令牌面板）
+   类别：--color-* / --font-size-* / --space-* / --radius-*，全局样式一律 var() 引用 */
+
+:root {
+  /* ===== 颜色（#146 星夜童话「夜幕 × 星光金 × 月光米白」，探针 P1-r2 面板直译）===== */
+  /* 夜幕（深蓝一族纵深，无紫向） */
+  --color-bg: #0d1b3e;
+  --color-bg-night: #05091a;
+  --color-bg-lift: #12224a;
+  --color-bg-accent: #0a1531;
+  --color-text: #f4f1e8;
+  --color-text-secondary: #a8b3cf;
+  --color-surface: #16294e;
+  --color-surface-bright: #1d3160;
+  --color-surface-dim: #0a1531;
+  --color-surface-shadow: #0a1531;
+  --color-primary: #ffd166;
+  --color-on-primary: #0d1b3e;
+  --color-primary-shadow: #a86f1a;
+  --color-secondary: #12224a;
+  --color-on-secondary: #f4f1e8;
+  --color-secondary-shadow: #3d5788;
+  --color-error: #ff9b8a;
+  --color-error-container: rgba(255, 155, 138, 0.14);
+  /* R25 红旗旗面描边（error 暖红同族加深一档 = 面板暖红纸面旗色） */
+  --color-flag-stroke: #c95844;
+  --color-glow: rgba(255, 209, 102, 0.4);
+  /* R2 补全令牌（设计方案 §8.1，P1 代码落位） */
+  --color-outline: #3d5788;
+  --color-outline-soft: rgba(168, 179, 207, 0.35);
+  --color-error-shadow: #c95844;
+  /* R15 亮色语义令牌族（#146 起夜幕重映射：go 系并入星光金体系，答对反馈不引入绿色） */
+  --color-go: #f7b733;
+  --color-on-go: #0d1b3e;
+  --color-go-shadow: #a86f1a;
+  --color-go-text: #ffd166;
+  --color-star: #ffd166;
+  --color-star-deep: #f7b733;
+  --color-on-star: #0d1b3e;
+  /* 雾蓝插画（探针 P1-r2 新增） */
+  --color-mist: #8fa8d8;
+  /* #152 夜空星子层（G1）：探针 sky spark--pale 直译（米白四芒星） */
+  --color-star-pale: #e8e4d4;
+  /* 暖红点缀（夜底警示 warm / 纸面旗色 warm-deep） */
+  --color-warm: #ff9b8a;
+  --color-warm-deep: #c95844;
+  /* 题卡米白纸面（#146 四屏细装：夜色中的米白纸片） */
+  --color-paper: #f4efe1;
+  --color-paper-deep: #ece5d2;
+  --color-morning-text: #16264d;
+  /* #152 G6 答题屏顶氛围光：探针 s-quiz 顶部 radial 直译（α 0.1 克制档，「一盏灯」的方向感） */
+  --color-ambient: rgba(255, 209, 102, 0.1);
+  /* #152 G9 价格价签描边：探针 price-tag 金描边直译（半透明星光金） */
+  --color-price-tag-border: rgba(255, 209, 102, 0.55);
+  /* R2 组件新增令牌（设计方案 §8.2） */
+  --color-scrim: rgba(4, 8, 20, 0.72);
+  --z-modal: 100;
+  --z-toast: 120;
+  /* #152 夜空星子层（G1）：外壳背景装饰层——页面内容之下、水印/弹窗层之下 */
+  --z-sky: 0;
+  --duration-fast: 0.12s;
+  --duration-base: 0.24s;
+  --duration-slow: 0.4s;
+  --modal-max: 400px;
+
+  /* ===== 字号（#146 星夜童话字阶，探针 P1-r2 字阶表；低年级识字有限层级拉开）===== */
+  /* #155 字号族流式化：clamp(下限=现值, 线性插值 @390/1366 视口, 上限=现值×1.12 四舍五入)。
+     390px 视口渲染值=现值（手机观感不变），1366px 触顶。标准 slope 公式：截距px + 斜率vw */
+  --font-size-display: clamp(64px, 60.8px + 0.82vw, 72px);
+  --font-size-headline: clamp(26px, 24.8px + 0.31vw, 29px);
+  --font-size-question: clamp(34px, 32.4px + 0.41vw, 38px);
+  --font-size-topbar: clamp(18px, 17.2px + 0.2vw, 20px);
+  --font-size-btn: clamp(18px, 17.2px + 0.2vw, 20px);
+  --font-size-btn-sm: clamp(15px, 14.2px + 0.2vw, 17px);
+  --font-size-body-lg: clamp(18px, 17.2px + 0.2vw, 20px);
+  --font-size-body: clamp(16px, 15.2px + 0.2vw, 18px);
+  --font-size-info: clamp(15px, 14.2px + 0.2vw, 17px);
+  --font-size-star-lg: clamp(56px, 53.2px + 0.72vw, 63px);
+  --font-size-star: clamp(44px, 42px + 0.51vw, 49px);
+  --font-size-num: clamp(16px, 15.2px + 0.2vw, 18px);
+  --font-size-label: clamp(13px, 12.2px + 0.2vw, 15px);
+  --font-size-caption: clamp(12px, 11.6px + 0.1vw, 13px);
+
+  /* ===== 间距（探针 P1-r2 与既有表同值）===== */
+  --space-xs: 4px;
+  --space-base: 8px;
+  --space-sm: 12px;
+  --space-gutter: 16px;
+  --space-md: 24px;
+  --space-lg: 40px;
+  --space-xl: 64px;
+  --space-page: 20px;
+
+  /* ===== 圆角（#146 夜幕柔和 12–24，探针 P1-r2：xl 收 20 / 新增 2xl 24）===== */
+  --radius-sm: 4px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+  /* #152 G9 价格价签：探针 price-tag 直译（左上 8 / 右 12 圆角 = 左侧挂口形态） */
+  --radius-price-tag: 8px 12px 12px 8px;
+
+  /* ===== #57 令牌收口新增（2026-08-30 拍板，规格值零硬编码）===== */
+  /* 字距两档：标题类 / 信息文字类 */
+  --letter-spacing-title: 1px;
+  --letter-spacing-info: 0.5px;
+
+  /* #158 R-宽档控件封顶：一级控件宽度上限——任何屏上控件不比大手机更大，
+     与外壳第一阶段列宽 480px 同值同源（App.vue 外壳基础规则），仅供 ≥600 媒体块内引用 */
+  --control-max-width: 480px;
+
+  /* 触控/规格尺寸四档：xs 迷你图标热区（#63 阵营 mini 头像）/ sm 最小触控热区 / md 标准控件与选项行高 / lg 页头规格高度 */
+  --touch-xs: 24px;
+  --touch-sm: 44px;
+  --touch-md: 56px;
+  --touch-lg: 64px;
+
+  /* 唇边阴影深度四档（box-shadow 纵向偏移量） */
+  --shadow-xs: 2px;
+  --shadow-sm: 4px;
+  --shadow-md: 6px;
+  --shadow-lg: 8px;
+
+  /* 图标尺寸档：sm = 18px 关闭 X（StarIconClose 共享件；StarGlyph sm 同值独立定义，见其尺寸矩阵注释） */
+  --icon-size-sm: 18px;
+
+  /* 弱化透明度档：常驻低调元素默认透明度（#258 游戏会话右上角退出 X 0.55；hover/聚焦提亮的 1 不入档） */
+  --opacity-muted: 0.55;
+
+  /* 描边宽度：细描边 */
+  --border-thin: 1.5px;
+
+  /* 行高两档（#309 说明页原型调出后老板批准新增；说明页落地与家长侧文案页面共用）：
+     tight = 卡片标题等短行文字；body = 正文段落（疏朗阅读感，勿回退 normal≈1.4） */
+  --leading-tight: 1.25;
+  --leading-body: 1.7;
+
+  /* #153 首页大星主视觉尺寸档：hero 星形规格（96–120px 区间平衡档） */
+  --size-star-hero: 112px;
+
+  /* ===== #146 星夜童话发光与暗面规格（探针 P1-r2 面板拍板项）=====
+     #152（G12）发光预算放宽为「探针档」：星星 / 余额得星大数字 / 主按钮 CTA 光晕 /
+     分段切换器选中态 / 题卡顶部暖光 inset（灯下纸片）/ 卡片唇边极淡光 / 进度条填充微光——
+     逐处对照探针 P1-r2 取值，档位以探针为准 */
+  --shadow-card: 0 10px 28px rgba(3, 7, 18, 0.5);
+  --shadow-star-btn: 0 4px 0 #a86f1a;
+  --glow-star: 0 0 12px rgba(255, 209, 102, 0.55), 0 0 34px rgba(255, 209, 102, 0.22);
+  --glow-star-soft: 0 0 8px rgba(255, 209, 102, 0.35);
+  --glow-btn: 0 0 20px rgba(247, 183, 51, 0.35);
+  --glow-num: 0 2px 18px rgba(255, 209, 102, 0.35);
+  /* #152 G5 题卡顶部暖光 inset：探针 question-card box-shadow 第二段直译（灯下纸片体积感） */
+  --glow-paper-top: inset 0 20px 26px -14px rgba(255, 209, 102, 0.55);
+  /* #152 G12 卡片唇边极淡光：探针手机框 inset 直译（卡片边缘极淡的光） */
+  --glow-edge: inset 0 1px 0 rgba(244, 241, 232, 0.06);
+  /* #152 G12 进度条填充微光：探针 progress-fill 直译（内白高光 + 外金微光） */
+  --glow-progress: inset 0 1.5px 0 rgba(255, 255, 255, 0.4), 0 0 10px rgba(255, 209, 102, 0.55);
+  /* SVG 星形两级光晕（drop-shadow 语法，面板 glow-dot 直译；只给星星） */
+  --glow-star-svg: drop-shadow(0 0 6px rgba(255, 209, 102, 0.8)) drop-shadow(0 0 16px rgba(255, 209, 102, 0.35));
+  /* SVG 星形单级微光（余额星 / 星形币 / 空态星等小星，探针同值直译） */
+  --glow-star-svg-soft: drop-shadow(0 0 4px rgba(255, 209, 102, 0.7));
+
+  /* ===== #146 星夜童话动效令牌（探针 P1-r2 收敛口径：只服务活着的夜空）=====
+     #152（G2/G13）动效预算对齐探针档：星星的呼吸 / 漂浮 / 闪烁 + 夜云极慢漂移
+     （云属夜空叙事层、26s 极慢档，审计板 G2 拍板恢复）；非夜空系装饰动画仍清零；
+     答对反馈条光晕呼吸同属星光系（星光照亮反馈，复用呼吸节奏档） */
+  --duration-breath: 2.6s;
+  --duration-float: 3.2s;
+  --duration-twinkle: 4s;
+  /* #152 G2 云朵极慢漂移档（探针观感 26s，真机夜云恢复） */
+  --duration-drift: 26s;
+
+  /* ===== #298 奖品聚合格卡（#294 二轮原型拍板值令牌化：数值零改动；新增令牌待拍板）=====
+     Prizes.vue scoped 样式专用族：emoji 规格 / ×N 角标几何 / 聚合动效时长 */
+  /* 聚合动效两件共用时长：角标弹跳与清空缩小淡出（JS 侧 Prizes.vue PRIZE_LEAVE_MS 同值对齐） */
+  --duration-prize-fx: 0.32s;
+  /* 格卡 emoji 规格（#294 拍板 48px，表外单值不入 clamp 流式族） */
+  --font-size-prize-emoji: 48px;
+  /* ×N 角标挂 emoji 右上角偏移（胶囊悬浮出格形态） */
+  --prize-badge-offset-y: -6px;
+  --prize-badge-offset-x: -14px;
+  /* ×N 角标胶囊内距（星光金胶囊横向拉长形态） */
+  --prize-badge-pad-y: 1px;
+  --prize-badge-pad-x: 10px;
+  /* emoji 相对定位容器内距（角标悬浮定位基准） */
+  --space-prize-emoji-wrap: 2px;
+}

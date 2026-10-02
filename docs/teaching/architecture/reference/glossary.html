@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>架构判断速查表</title><link rel="stylesheet" href="../assets/lesson.css"></head><body><main>
+<h1>架构判断速查表</h1><p class="lesson-meta">供评审 AI 方案时使用 · <a href="../lessons/0001-module-value.html">回到第一课</a></p>
+<h2 id="module">Module：有对外约定，也有内部做法</h2><p>不是文件夹的同义词。一个函数、一组协作代码，都可以构成 module。先说清观察尺度，再讨论拆合。</p>
+<h2 id="interface">Interface：使用它必须知道的一切</h2><p>包括交什么资料、得到什么结果、有哪些失败、要先做什么、会改变什么。不是屏幕界面，也不只是参数列表。</p>
+<h2 id="implementation">Implementation：内部怎样完成工作</h2><p>理想情况下，调用者不用亲自安排其中的细节；但内部效果和限制仍须由 interface 清楚交代。</p>
+<h2 id="depth">Depth：学会少量约定，能办多少事</h2><p>深 module 让调用者少操心、得到更多能力。不是文件越长越深，也不是把无关工作全塞一起。</p>
+<h2 id="questions">遇到“应该拆一个 module”时问</h2><ol><li>谁会使用它？使用者交什么、得到什么？</li><li>使用者因此不必再知道哪条规则、哪种细节？</li><li>举一个具体变化：拆之前改哪里，拆之后改哪里？</li><li>新增了哪些传话、顺序要求和失败处理成本？</li></ol><p>若只是“文件更短”“以后可能用到”，理由还不够；若规则不再散落、调用者真的省事，才有实质收益。拆合仍须结合需求与测试判断。</p>
+<h2>后续课再展开</h2><dl><dt>Seam（接缝）</dt><dd>能够不修改该处代码就改变行为的位置；不是任意两个文件相邻的地方。</dd><dt>Adapter</dt><dd>在某个 seam 满足 interface 的具体实现角色。</dd><dt>Leverage</dt><dd>调用者学会少量约定所获得的能力。</dd><dt>Locality</dt><dd>让相关知识、修改和验证集中，而不是散落各处。</dd></dl>
+<p>理论来源：<a href="https://www.cs.lafayette.edu/~gexia/cs301/resources/parnas.html">Parnas 原论文</a>；词义采用仓库 codebase-design 约定。速查表是判断提示，不是自动裁决器。</p>
+</main></body></html>

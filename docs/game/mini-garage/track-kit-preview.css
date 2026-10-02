@@ -1,0 +1,24 @@
+/* Private art-review components; reuse the sample's tokens, never the host shell. */
+.kit-materials h2{margin:26px 0 12px;font-size:14px}
+.kit-note{padding:14px 15px;border-radius:14px;background:var(--sage);border:1px solid var(--line);font-size:11px;line-height:1.8}
+.kit-note b,.kit-note span{display:block}.kit-note span{color:var(--muted);margin-top:4px}
+.kit-cars,.kit-parts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.kit-cars a,.kit-parts a,.kit-surfaces a,.kit-effects a{text-decoration:none;min-width:0}
+.kit-cars a,.kit-parts a{padding:13px 10px 12px;border:1px solid var(--line);border-radius:18px;background:var(--white);text-align:center}
+.kit-cars a>div{height:160px;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 63%,#d4dccc66,transparent 70%)}
+.kit-cars img{height:154px;width:auto;max-width:100%;object-fit:contain;filter:drop-shadow(2px 4px 3px #28493d26)}
+.kit-cars b,.kit-parts b{display:block;font-size:11px;margin-top:10px}
+.kit-cars small,.kit-parts small,.kit-surfaces small{display:block;color:var(--muted);font-size:9px;margin-top:3px}
+.kit-surfaces{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.kit-surfaces i{display:block;height:70px;border-radius:12px;background-size:130px;box-shadow:inset 0 0 0 1px #294a371a}
+.kit-surfaces b{display:block;font-size:11px;margin-top:7px}
+.kit-parts a>div{height:104px;display:grid;place-items:center}
+.kit-parts img{max-width:100%;max-height:100px;filter:drop-shadow(1px 3px 2px #243f3326)}
+.kit-effects{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:24px}
+.kit-effects a{padding:8px 4px;border-radius:12px;background:#dfe6d8;text-align:center}
+.kit-effects img{display:block;width:100%;height:62px;object-fit:contain}.kit-effects small{font-size:9px}
+.race-stage{background:#e8ddc5}
+.kit-landing{opacity:0;transform-box:fill-box;transform-origin:center}
+.race-heading small{letter-spacing:.4px}
+.race-status{pointer-events:none}
+@media(max-width:350px){.kit-cars,.kit-parts{gap:8px}.kit-cars a{padding-inline:5px}.kit-cars a>div{height:135px}.kit-cars img{height:130px}.kit-cars b{font-size:10px}.kit-surfaces{gap:6px}.kit-surfaces small{font-size:8px}}

@@ -1,0 +1,2713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>星星答题 · 设计 status quo 快照（2026-09-04）</title>
+<style>
+/* ============================================================
+   本文件是「星星答题」app 的点时设计快照（#140，2026-09-04）。
+   所有令牌与样式值逐条取自当前实现真实源：
+   - 设计令牌：src/styles/variables.css
+   - 共享样式集：src/styles/components.css
+   - 外壳与页面骨架：src/App.vue
+   - 组件视觉：src/components/*.vue（StarButtonStandard / StarModalStandard / StarNavBar / StarChip / StarIconBtn / StarModeEntry / CardToggle）
+   - 页面布局：src/pages/*.vue 各 scoped 样式与模板结构（每屏加 .s-* 前缀承载）
+   - 界面文案：src/copy.ts（真实文案，非自拟）
+   图标为内联 SVG，按页面真实使用的内联 SVG path 复刻。
+   （src/assets/kv/*.svg 已于 2026-08-25 全部作废且无页面引用，本快照不复用。）
+   陈列形态：静态网格 + 手机宽度框 + 页面名标签，无 JS、无外部依赖。
+   ============================================================ */
+
+/* ===== 设计令牌（原样取自 src/styles/variables.css）===== */
+:root {
+  --color-bg: #fbfeff;
+  --color-text: #2b3a55;
+  --color-text-secondary: #6b7a95;
+  --color-surface: #ffffff;
+  --color-surface-dim: #f2f5fa;
+  --color-surface-shadow: #d3dcea;
+  --color-primary: #3d7ee0;
+  --color-on-primary: #ffffff;
+  --color-primary-shadow: #2b5ca8;
+  --color-primary-light: #ffe170;
+  --color-secondary: #eaf2fd;
+  --color-on-secondary: #3d7ee0;
+  --color-secondary-shadow: #c3d7f0;
+  --color-error: #d9544f;
+  --color-error-container: #fdeceb;
+  --color-flag-stroke: #b0403c;
+  --color-glow: rgba(239, 152, 32, 0.4);
+  --color-tertiary: #ffb77f;
+  --color-on-tertiary: #4a2500;
+  --color-tertiary-shadow: #cc8a52;
+  --color-outline: #dce4f0;
+  --color-outline-strong: #6b5f4a;
+  --color-error-shadow: #e2b3b0;
+  --color-bg-accent: #dce7f4;
+  --color-go: #7cb342;
+  --color-on-go: #24370a;
+  --color-go-shadow: #5a8a2c;
+  --color-go-text: #5a8a2c;
+  --color-star: #ef9820;
+  --color-star-shadow: #c47f1c;
+  --color-scrim: rgba(15, 11, 8, 0.6);
+  --color-test-watermark-bg: rgba(224, 87, 79, 0.08);
+  --color-test-watermark-text: #e0574f;
+  --color-test-card-bg-active: rgba(224, 87, 79, 0.06);
+  --color-test-border: #e0574f;
+  --color-test-shadow: #c2473f;
+  --z-watermark: 90;
+  --z-modal: 100;
+  --z-toast: 120;
+  --duration-fast: 0.12s;
+  --duration-base: 0.24s;
+  --duration-slow: 0.4s;
+  --modal-max: 400px;
+  --font-size-display: 40px;
+  --font-size-headline: 24px;
+  --font-size-topbar: 18px;
+  --font-size-btn: 18px;
+  --font-size-btn-sm: 14px;
+  --font-size-body-lg: 18px;
+  --font-size-body: 16px;
+  --font-size-info: 15px;
+  --font-size-star-lg: 56px;
+  --font-size-star: 44px;
+  --font-size-num: 16px;
+  --font-size-label: 13px;
+  --font-size-caption: 12px;
+  --font-size-test-watermark: 42px;
+  --space-xs: 4px;
+  --space-base: 8px;
+  --space-sm: 12px;
+  --space-gutter: 16px;
+  --space-md: 24px;
+  --space-lg: 40px;
+  --space-xl: 64px;
+  --space-page: 20px;
+  --radius-sm: 4px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+  --letter-spacing-title: 1px;
+  --letter-spacing-info: 0.5px;
+  --touch-xs: 24px;
+  --touch-sm: 44px;
+  --touch-md: 56px;
+  --touch-lg: 64px;
+  --shadow-xs: 2px;
+  --shadow-sm: 4px;
+  --shadow-md: 6px;
+  --shadow-lg: 8px;
+  --border-thin: 1.5px;
+}
+
+/* ===== 陈列板外壳（快照工件的展示层，非 app UI 复刻）===== */
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--color-surface-dim);
+  color: var(--color-text);
+}
+.board {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: var(--space-lg) var(--space-md);
+}
+.board-title {
+  margin: var(--space-xl) 0 var(--space-xs);
+  font-size: var(--font-size-headline);
+  font-weight: 800;
+  letter-spacing: var(--letter-spacing-title);
+}
+.board-title:first-child {
+  margin-top: 0;
+}
+.board-note {
+  margin: 0 0 var(--space-md);
+  font-size: var(--font-size-info);
+  color: var(--color-text-secondary);
+}
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: var(--space-lg);
+  align-items: start;
+}
+.shot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.tag {
+  font-size: var(--font-size-body);
+  font-weight: 800;
+  letter-spacing: var(--letter-spacing-title);
+}
+.tag .tag-route {
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-left: var(--space-sm);
+}
+.flow {
+  margin: 0;
+  font-size: var(--font-size-label);
+  color: var(--color-text-secondary);
+}
+
+/* ===== 手机宽度框（承载 app 复刻内容）===== */
+.phone {
+  position: relative;
+  border-radius: var(--radius-xl);
+  border: var(--border-thin) solid var(--color-surface-shadow);
+  background:
+    radial-gradient(120% 60% at 50% -10%, var(--color-bg-accent) 0%, transparent 60%),
+    linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-accent) 100%);
+  box-shadow: 0 var(--shadow-sm) 0 var(--color-surface-shadow);
+  overflow: hidden;
+}
+.screen {
+  max-width: 480px;
+  margin-inline: auto;
+  min-height: 660px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  color: var(--color-text);
+  font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+/* ===== 外壳与页面骨架（取自 src/App.vue）===== */
+[data-page] {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.page {
+  padding: var(--space-gutter) var(--space-page) 0;
+}
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  min-height: var(--touch-lg);
+  padding: var(--space-gutter) var(--space-page);
+}
+.page-title {
+  margin: 0;
+  font-size: var(--font-size-topbar);
+  font-weight: 800;
+  letter-spacing: var(--letter-spacing-title);
+  color: var(--color-text);
+  text-align: center;
+}
+
+/* ===== 共享样式集（原样取自 src/styles/components.css）===== */
+.star-container {
+  box-sizing: border-box;
+  background-color: var(--color-surface);
+  border: var(--border-thin) solid var(--color-outline);
+  border-radius: var(--radius-lg);
+  padding: var(--space-gutter);
+}
+.balance-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: transparent;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-num);
+  font-weight: 800;
+  color: var(--color-star);
+}
+.config-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-sm);
+  min-height: var(--touch-sm);
+  padding: 0 var(--space-sm);
+  font-size: var(--font-size-caption);
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: underline;
+}
+.bottom-action-bar {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-gutter) var(--space-page) var(--space-md);
+}
+.page-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* ===== 组件：StarButtonStandard（原样取自 src/components/StarButtonStandard.vue）===== */
+.star-button {
+  border: 0;
+  box-sizing: border-box;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition:
+    transform var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease,
+    filter var(--duration-fast) ease;
+}
+.star-button--primary.star-button--large {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: 0 var(--shadow-md) 0 var(--color-primary-shadow);
+}
+.star-button--primary.star-button--small {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: 0 var(--shadow-sm) 0 var(--color-primary-shadow);
+}
+.star-button--standard.star-button--large {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: var(--border-thin) solid var(--color-secondary-shadow);
+  box-shadow: 0 var(--shadow-md) 0 var(--color-secondary-shadow);
+}
+.star-button--standard.star-button--small {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: var(--border-thin) solid var(--color-secondary-shadow);
+  box-shadow: 0 var(--shadow-sm) 0 var(--color-surface-shadow);
+}
+.star-button--large {
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-btn);
+  font-weight: 700;
+  min-height: var(--touch-md);
+}
+.star-button--small {
+  padding: var(--space-base) var(--space-sm);
+  font-size: var(--font-size-btn-sm);
+  font-weight: 600;
+  min-height: var(--touch-sm);
+}
+.star-button--large.star-button--edge-inset {
+  width: calc(100% - 2 * var(--space-page));
+  margin-inline: auto;
+}
+.star-button--large.star-button--edge-full {
+  width: 100%;
+}
+.star-button:disabled {
+  filter: saturate(0.45);
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
+/* ===== 组件：StarModalStandard（取自 src/components/StarModalStandard.vue；陈列形态下 fixed 改 absolute 于手机框内）===== */
+.star-modal {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+}
+.star-modal__scrim {
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-scrim);
+  opacity: 0.9;
+  transition: opacity var(--duration-base) ease;
+}
+.star-modal__card {
+  position: relative;
+  width: 100%;
+  max-width: var(--modal-max);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 var(--shadow-sm) 0 var(--color-surface-shadow);
+  padding: var(--space-md);
+}
+.star-modal__close {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+}
+.star-modal__title {
+  margin: 0 0 var(--space-sm);
+  font-size: var(--font-size-headline);
+  font-weight: 700;
+  text-align: center;
+}
+.star-modal__desc {
+  margin: 0 0 var(--space-md);
+  font-size: var(--font-size-body);
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  text-align: center;
+  line-height: 1.5;
+}
+.star-modal__title + .star-modal__desc {
+  margin-top: calc(var(--space-base) - var(--space-sm));
+}
+.star-modal__text {
+  margin: 0 0 var(--space-md);
+  font-size: var(--font-size-body-lg);
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.5;
+}
+.star-modal__actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+.star-modal__actions .star-button {
+  flex: 1;
+}
+
+/* ===== 组件：StarNavBar（原样取自 src/components/StarNavBar.vue）===== */
+.star-nav-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+}
+.star-nav-bar__side {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+.star-nav-bar__side--left {
+  justify-content: flex-start;
+}
+.star-nav-bar__side--right {
+  justify-content: flex-end;
+}
+
+/* ===== 组件：StarChip（原样取自 src/components/StarChip.vue）===== */
+.star-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+}
+.star-chip--default.star-chip--sm {
+  padding: 4px 12px;
+  font-size: var(--font-size-caption);
+  background-color: var(--color-surface-dim);
+  color: var(--color-text-secondary);
+}
+.star-chip--default.star-chip--md {
+  padding: 8px 16px;
+  font-size: var(--font-size-btn-sm);
+  background-color: var(--color-surface-dim);
+  color: var(--color-text-secondary);
+}
+.star-chip--ghost.star-chip--sm {
+  padding: 4px 12px;
+  font-size: var(--font-size-caption);
+  background-color: transparent;
+  color: var(--color-text-secondary);
+}
+.star-chip--ghost.star-chip--md {
+  padding: 8px 16px;
+  font-size: var(--font-size-btn-sm);
+  background-color: transparent;
+  color: var(--color-text-secondary);
+}
+
+/* ===== 组件：StarIconBtn（原样取自 src/components/StarIconBtn.vue）===== */
+.star-icon-btn {
+  border: 0;
+  padding: 0;
+  width: var(--touch-sm);
+  height: var(--touch-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+/* ===== 组件：StarModeEntry 入口 chip（取自 src/components/StarModeEntry.vue）===== */
+.star-mode-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-base);
+  min-height: var(--touch-sm);
+  padding: var(--space-xs) var(--space-md);
+  background-color: var(--color-surface);
+  border: var(--border-thin) solid var(--color-secondary-shadow);
+  border-radius: var(--radius-full);
+  box-shadow: 0 var(--shadow-xs) 0 var(--color-surface-shadow);
+  cursor: pointer;
+  font-family: inherit;
+}
+.star-mode-entry__label {
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.star-mode-entry__value {
+  font-size: var(--font-size-btn-sm);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+.star-mode-entry__caret {
+  color: var(--color-text-secondary);
+}
+
+/* ===== 组件：CardToggle 测试模式开关卡（取自 src/components/CardToggle.vue，关闭态）===== */
+.test-mode-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  width: 100%;
+  transition:
+    background-color var(--duration-base) ease,
+    border-color var(--duration-base) ease;
+}
+.test-mode-card .card-info {
+  flex: 1;
+  min-width: 0;
+}
+.test-mode-card .card-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-base);
+  margin: 0 0 var(--space-base);
+  font-size: var(--font-size-body-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+.test-mode-card .card-desc {
+  margin: 0;
+  font-size: var(--font-size-info);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+.mode-switch {
+  position: relative;
+  border: 0;
+  padding: 0;
+  min-width: var(--touch-sm);
+  min-height: var(--touch-sm);
+  background-color: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.switch-track {
+  display: inline-flex;
+  align-items: center;
+  width: 52px;
+  height: 30px;
+  padding: 3px;
+  background-color: var(--color-surface-dim);
+  border: var(--border-thin) solid var(--color-outline);
+  border-radius: var(--radius-full);
+}
+.switch-thumb {
+  width: 22px;
+  height: 22px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-full);
+  box-shadow: 0 var(--shadow-xs) 0 var(--color-surface-shadow);
+}
+
+/* ===== 屏 ① 首页（取自 src/pages/Home.vue scoped）===== */
+.s-home {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.s-home .home-scroll {
+  display: flex;
+  flex-direction: column;
+}
+.s-home .clouds {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 0;
+  pointer-events: none;
+}
+.s-home .cloud {
+  position: absolute;
+  width: 96px;
+  height: 48px;
+  background: color-mix(in srgb, var(--color-surface) 85%, transparent);
+  border-radius: 50%;
+}
+.s-home .cloud::before,
+.s-home .cloud::after {
+  content: '';
+  position: absolute;
+  background: color-mix(in srgb, var(--color-surface) 85%, transparent);
+  border-radius: 50%;
+}
+.s-home .cloud::before {
+  width: 48px;
+  height: 48px;
+  top: -18px;
+  left: 18px;
+}
+.s-home .cloud::after {
+  width: 36px;
+  height: 36px;
+  top: -10px;
+  left: 52px;
+}
+.s-home .cloud-1 {
+  top: 56px;
+  left: -24px;
+}
+.s-home .cloud-2 {
+  top: 96px;
+  right: -32px;
+}
+.s-home .home-main {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding-top: var(--space-xl);
+  text-align: center;
+}
+.s-home .app-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-top: auto;
+  padding-top: var(--space-md);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+.s-home .big-star {
+  width: 96px;
+  height: 96px;
+  animation: home-star-float 3s ease-in-out infinite;
+}
+@keyframes home-star-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.s-home .star-value {
+  font-size: var(--font-size-star);
+  font-weight: 800;
+  color: var(--color-star);
+}
+.s-home .balance-label {
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.s-home .home-hint {
+  font-size: var(--font-size-info);
+  font-weight: 400;
+}
+
+/* ===== 屏 ② 答题页（取自 src/pages/Quiz.vue scoped）===== */
+.s-quiz {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+}
+.s-quiz .quiz-scroll {
+  padding: var(--space-gutter) var(--space-page) var(--space-md);
+}
+.s-quiz .progress-area {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-gutter);
+}
+.s-quiz .progress-bar {
+  flex: 1;
+  height: 16px;
+  background-color: var(--color-surface-dim);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  box-shadow: inset 0 var(--shadow-xs) 0 var(--color-surface-shadow);
+}
+.s-quiz .progress-fill {
+  height: 100%;
+  background-color: var(--color-primary);
+  border-radius: var(--radius-full);
+}
+.s-quiz .progress-label {
+  font-size: var(--font-size-label);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+.s-quiz .question-card {
+  position: relative;
+  padding-right: 64px;
+  margin-bottom: var(--space-md);
+}
+.s-quiz .flag-btn {
+  position: absolute;
+  top: var(--space-base);
+  right: var(--space-base);
+}
+.s-quiz .flag-btn svg {
+  width: 24px;
+  height: 24px;
+}
+.s-quiz .flag-icon {
+  fill: var(--color-surface);
+  stroke: var(--color-text-secondary);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.s-quiz .question-text {
+  margin: var(--space-sm) 0 0;
+  font-size: var(--font-size-body-lg);
+  font-weight: 600;
+  line-height: 1.5;
+}
+.s-quiz .options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.s-quiz .option {
+  border: 0;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 var(--shadow-sm) 0 var(--color-surface-shadow);
+  padding: var(--space-sm) var(--space-gutter);
+  min-height: var(--touch-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+.s-quiz .option:disabled {
+  background-color: var(--color-surface-dim);
+  color: var(--color-text-secondary);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.s-quiz .option-skip {
+  border: 0;
+  background-color: var(--color-surface-dim);
+  color: var(--color-text-secondary);
+  box-shadow: 0 var(--shadow-sm) 0 var(--color-surface-shadow);
+  padding: var(--space-sm) var(--space-gutter);
+  min-height: var(--touch-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.s-quiz .option.correct {
+  background-color: var(--color-go);
+  color: var(--color-on-go);
+  box-shadow: 0 var(--shadow-sm) 0 var(--color-go-shadow);
+}
+.s-quiz .feedback-area {
+  margin-top: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.s-quiz .feedback-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-base);
+  font-size: var(--font-size-info);
+  font-weight: 700;
+}
+.s-quiz .feedback-bar svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.s-quiz .feedback-correct {
+  color: var(--color-go-text);
+}
+
+/* ===== 屏 ③ 结算页（取自 src/pages/Result.vue scoped）===== */
+.s-result {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+  position: relative;
+}
+.s-result .result-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 var(--space-page) var(--space-md);
+}
+.s-result .result-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding-top: var(--space-xl);
+  text-align: center;
+  position: relative;
+}
+.s-result .big-star {
+  width: 132px;
+  height: 132px;
+  animation: result-star-float 3s ease-in-out infinite;
+}
+@keyframes result-star-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.s-result .earn-visual {
+  display: flex;
+  align-items: center;
+  gap: var(--space-base);
+}
+.s-result .earn-visual svg {
+  width: 20px;
+  height: 20px;
+}
+.s-result .earn-number {
+  font-size: var(--font-size-star-lg);
+  font-weight: 800;
+  color: var(--color-star);
+}
+.s-result .earn-unit {
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.s-result .result-message {
+  margin: 0;
+  font-size: var(--font-size-info);
+  font-weight: 400;
+  letter-spacing: var(--letter-spacing-info);
+  color: var(--color-text-secondary);
+}
+
+/* ===== 屏 ④⑳ 兑换页（取自 src/pages/Redeem.vue scoped）===== */
+.s-redeem .redeem-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding-bottom: var(--space-md);
+}
+.s-redeem .reward-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.s-redeem .reward-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-gutter);
+}
+.s-redeem .reward-item.is-locked {
+  opacity: 0.62;
+}
+.s-redeem .reward-emoji {
+  font-size: 30px;
+}
+.s-redeem .reward-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+.s-redeem .reward-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-base);
+}
+.s-redeem .reward-name {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+}
+.s-redeem .reward-price {
+  font-size: var(--font-size-num);
+  font-weight: 800;
+  color: var(--color-star);
+  margin-top: 0;
+}
+.s-redeem .page-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+.s-redeem .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xl) var(--space-gutter);
+  text-align: center;
+}
+.s-redeem .empty-text {
+  margin: 0;
+  font-size: var(--font-size-body);
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+/* ===== 屏 ⑤ 星星记事本（取自 src/pages/StarLog.vue scoped）===== */
+.s-starlog .log-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-md);
+}
+.s-starlog .ledger-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.s-starlog .ledger-row {
+  display: grid;
+  grid-template-columns: 40px 1fr auto auto;
+  align-items: center;
+  gap: var(--space-sm);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  border-bottom: var(--border-thin) solid var(--color-outline);
+  padding: var(--space-sm) var(--space-gutter);
+}
+.s-starlog .stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-secondary);
+}
+.s-starlog .stamp svg {
+  width: 20px;
+  height: 20px;
+}
+.s-starlog .row-source {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.s-starlog .log-time {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+  margin-top: 0;
+}
+.s-starlog .row-amount {
+  font-size: var(--font-size-num);
+  font-weight: 800;
+}
+.s-starlog .amount-earn {
+  color: var(--color-star);
+}
+.s-starlog .amount-redeem {
+  color: var(--color-text-secondary);
+}
+
+/* ===== 屏 ⑥ 星星宝藏箱（取自 src/pages/Prizes.vue scoped）===== */
+.s-prizes .prizes-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding-bottom: var(--space-md);
+}
+.s-prizes .prize-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.s-prizes .prize-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-gutter);
+}
+.s-prizes .prize-emoji {
+  font-size: 30px;
+}
+.s-prizes .prize-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+.s-prizes .prize-name {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+}
+.s-prizes .prize-date {
+  font-size: var(--font-size-label);
+  color: var(--color-text-secondary);
+}
+.s-prizes .prize-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+/* ===== 屏 ⑪ 配对页（取自 src/pages/Pair.vue scoped）===== */
+.s-pair {
+  padding: 0;
+}
+.s-pair .pair-scroll {
+  padding: var(--space-gutter) var(--space-page) var(--space-md);
+}
+.s-pair .pair-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+.s-pair .pair-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-base);
+}
+.s-pair .pair-field-label {
+  font-size: var(--font-size-body);
+  font-weight: 700;
+  color: var(--color-text);
+}
+.s-pair .pair-code-input,
+.s-pair .pair-name-input {
+  font-family: inherit;
+  font-size: var(--font-size-body-lg);
+  padding: var(--space-sm);
+  border: var(--border-thin) solid var(--color-outline);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+.s-pair .pair-code-input {
+  letter-spacing: var(--letter-spacing-title);
+}
+.s-pair .pair-hint {
+  font-size: var(--font-size-info);
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+.s-pair .pair-role-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-base);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.s-pair .pair-role-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  min-height: var(--touch-md);
+  padding: var(--space-base) var(--space-sm);
+  background-color: var(--color-surface-dim);
+  border: var(--border-thin) solid transparent;
+  border-radius: var(--radius-md);
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+.s-pair .pair-role-option.is-active {
+  background-color: var(--color-secondary);
+  border-color: var(--color-primary);
+}
+.s-pair .pair-role-text {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+.s-pair .pair-role-name {
+  font-size: var(--font-size-body);
+  font-weight: 700;
+  color: var(--color-text);
+}
+.s-pair .pair-role-option.is-active .pair-role-name {
+  color: var(--color-primary);
+}
+.s-pair .pair-role-desc {
+  font-size: var(--font-size-info);
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+.s-pair .pair-role-check {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+/* ===== 屏 ⑧ 家长页（取自 src/pages/Parent.vue scoped）===== */
+.s-parent .question-summary {
+  width: 100%;
+}
+.s-parent .question-summary-text {
+  margin: 0;
+  font-size: var(--font-size-info);
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+.s-parent .parent-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding-top: var(--space-lg);
+  padding-bottom: var(--space-md);
+}
+.s-parent .parent-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  width: 100%;
+}
+.s-parent .device-admin {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  width: 100%;
+}
+.s-parent .device-admin-title {
+  margin: 0;
+  font-size: var(--font-size-body-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+.s-parent .device-admin-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.s-parent .device-admin-section-title {
+  margin: 0;
+  font-size: var(--font-size-body);
+  font-weight: 700;
+  color: var(--color-text);
+}
+.s-parent .device-admin-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.s-parent .device-admin-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-base) 0;
+  border-bottom: var(--border-thin) solid var(--color-outline);
+}
+.s-parent .device-admin-list .device-admin-row:last-child {
+  border-bottom: none;
+}
+.s-parent .device-admin-main {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+}
+.s-parent .device-admin-name {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: var(--color-text);
+}
+.s-parent .device-admin-side {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-xs);
+}
+.s-parent .device-admin-last-seen,
+.s-parent .device-admin-snapshot-time {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+.s-parent .device-admin-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+.s-parent .family-code-value {
+  margin: 0;
+  font-size: var(--font-size-body-lg);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-title);
+  color: var(--color-text);
+}
+
+/* ===== 屏 ⑩ 出题指令页（取自 src/pages/QuestionPrompt.vue scoped）===== */
+.s-questionprompt .question-prompt-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding-bottom: var(--space-md);
+}
+.s-questionprompt .question-prompt-intro {
+  margin: 0;
+  font-size: var(--font-size-info);
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+.s-questionprompt .prompt-form,
+.s-questionprompt .prompt-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  width: 100%;
+}
+.s-questionprompt .prompt-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+.s-questionprompt .prompt-label {
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  color: var(--color-text);
+}
+.s-questionprompt .prompt-input,
+.s-questionprompt .prompt-textarea,
+.s-questionprompt .prompt-output {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: var(--space-base) var(--space-sm);
+  font-family: inherit;
+  font-size: var(--font-size-body);
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: var(--color-surface-dim);
+  border: var(--border-thin) solid var(--color-outline);
+  border-radius: var(--radius-md);
+}
+
+/* ===== 屏 ⑫⑮ 提议板列表（取自 src/pages/Proposals.vue scoped）===== */
+.s-proposals .proposals-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+  padding-bottom: var(--space-md);
+}
+.s-proposals .window-note {
+  margin: 0;
+  padding: 0 var(--space-gutter);
+  text-align: center;
+  font-size: var(--font-size-label);
+  color: var(--color-text-secondary);
+}
+.s-proposals .proposal-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.s-proposals .proposal-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.s-proposals .proposal-card.is-voided .proposal-name,
+.s-proposals .proposal-card.is-voided .proposal-price {
+  opacity: 0.45;
+}
+.s-proposals .card-head {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+.s-proposals .card-head.has-badge {
+  padding-right: calc(var(--space-gutter) * 3);
+}
+.s-proposals .proposal-name {
+  margin: 0;
+  font-size: var(--font-size-body-lg);
+  font-weight: 700;
+  color: var(--color-text);
+  min-width: 0;
+  text-align: left;
+}
+.s-proposals .proposal-name.is-clickable {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+.s-proposals .proposal-price {
+  margin: 0;
+  font-size: var(--font-size-num);
+  font-weight: 800;
+  color: var(--color-star);
+}
+.s-proposals .star-glyph {
+  color: var(--color-star);
+  margin-right: var(--space-xs);
+}
+.s-proposals .card-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: var(--font-size-label);
+  font-weight: 800;
+  letter-spacing: var(--letter-spacing-title);
+}
+.s-proposals .card-badge.is-done {
+  color: var(--color-go-text);
+}
+.s-proposals .card-badge.is-void {
+  color: var(--color-flag-stroke);
+}
+.s-proposals .camp-sides {
+  display: flex;
+  gap: var(--space-sm);
+}
+.s-proposals .camp-side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  background: var(--color-surface-dim);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-gutter);
+}
+.s-proposals .camp-avatar {
+  width: var(--touch-sm);
+  height: var(--touch-sm);
+  flex: none;
+}
+.s-proposals .camp-avatar--mini {
+  width: var(--touch-xs);
+  height: var(--touch-xs);
+}
+.s-proposals .camp-state {
+  font-size: var(--font-size-label);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-align: right;
+}
+.s-proposals .camp-state.is-agree {
+  color: var(--color-go-text);
+}
+.s-proposals .card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}
+
+/* ===== 屏 ⑬⑯ 提议详情（取自 src/pages/ProposalDetail.vue scoped）===== */
+.s-proposaldetail .detail-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding-top: var(--space-md);
+  padding-bottom: var(--space-md);
+}
+.s-proposaldetail .detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+.s-proposaldetail .detail-name {
+  margin: 0;
+  font-size: var(--font-size-headline);
+  font-weight: 700;
+  color: var(--color-text);
+  min-width: 0;
+}
+.s-proposaldetail .detail-fields {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.s-proposaldetail .detail-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+.s-proposaldetail .detail-row dt {
+  flex-shrink: 0;
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.s-proposaldetail .detail-row dd {
+  margin: 0;
+  font-size: var(--font-size-body-lg);
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: right;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.s-proposaldetail .detail-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+.s-proposaldetail .void-btn {
+  color: var(--color-error);
+}
+
+/* ===== 屏 ⑭⑰ 提议表单（取自 src/pages/ProposalEdit.vue scoped）===== */
+.s-proposaledit {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+}
+.s-proposaledit .edit-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-gutter) var(--space-page) var(--space-md);
+}
+.s-proposaledit .proposal-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+.s-proposaledit .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-base);
+}
+.s-proposaledit .field-label {
+  font-size: var(--font-size-body);
+  font-weight: 700;
+  color: var(--color-text);
+}
+.s-proposaledit .form-name-input,
+.s-proposaledit .form-price-input,
+.s-proposaledit .form-desc-input {
+  font-family: inherit;
+  font-size: var(--font-size-body-lg);
+  padding: var(--space-sm);
+  border: var(--border-thin) solid var(--color-outline);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* ===== 屏 ⑱ 组件库列表（取自 src/pages/ComponentsList.vue scoped）===== */
+.s-componentslist .components-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+  padding-bottom: var(--space-md);
+}
+.s-componentslist .component-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  min-height: var(--touch-md);
+  text-decoration: none;
+}
+.s-componentslist .component-name {
+  font-size: var(--font-size-body-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+.s-componentslist .component-key {
+  font-size: var(--font-size-label);
+  color: var(--color-text-secondary);
+}
+
+/* ===== 屏 ⑲ 组件展示（取自 src/pages/ComponentShowcase.vue scoped）===== */
+.s-showcase .showcase-main {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+  padding-bottom: var(--space-md);
+}
+.s-showcase .showcase-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-gutter);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 var(--shadow-sm) 0 var(--color-surface-shadow);
+}
+.s-showcase .showcase-label {
+  font-size: var(--font-size-label);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+.s-showcase .showcase-cell--full {
+  grid-column: 1 / -1;
+}
+</style>
+</head>
+<body>
+<!-- 内联 SVG 图标库（path 逐条取自页面真实使用的内联 SVG：星星母型 / 勾 / 叉 / 减号 / 旗 / 下箭头，与 src/pages/*.vue 同源） -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="ico-star" viewBox="0 0 24 24">
+      <path d="M 12.94 3.71 L 14.31 6.92 Q 14.82 8.12 16.12 8.23 L 19.60 8.54 Q 21.99 8.76 20.18 10.33 L 17.54 12.63 Q 16.57 13.48 16.86 14.75 L 17.64 18.16 Q 18.17 20.49 16.11 19.26 L 13.12 17.47 Q 12.00 16.80 10.88 17.47 L 7.89 19.26 Q 5.83 20.49 6.36 18.16 L 7.14 14.75 Q 7.43 13.48 6.46 12.63 L 3.82 10.33 Q 2.01 8.76 4.40 8.54 L 7.88 8.23 Q 9.18 8.12 9.69 6.92 L 11.06 3.71 Q 12.00 1.50 12.94 3.71 Z" fill="var(--color-star)" stroke="var(--color-star-shadow)" stroke-width="1.5" stroke-linejoin="round" />
+    </symbol>
+    <symbol id="ico-check" viewBox="0 0 24 24">
+      <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" fill="currentColor" />
+    </symbol>
+    <symbol id="ico-close" viewBox="0 0 24 24">
+      <path d="M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z" fill="currentColor" />
+    </symbol>
+    <symbol id="ico-minus" viewBox="0 0 24 24">
+      <path d="M5 11h14v2H5z" fill="currentColor" />
+    </symbol>
+    <symbol id="ico-caret" viewBox="0 0 24 24">
+      <path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    </symbol>
+    <!-- 阵营头像（取自 src/pages/Proposals.vue CampAvatar：孩子 = 发梢卷 + 笑脸；家长 = 短发 + 眼镜） -->
+    <symbol id="ico-avatar-child" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="19" fill="var(--color-secondary)" />
+      <path d="M20 6c4.5-3 7 1 3.5 3.5" fill="none" stroke="var(--color-on-secondary)" stroke-width="2" stroke-linecap="round" />
+      <circle cx="14.5" cy="19" r="1.9" fill="var(--color-on-secondary)" />
+      <circle cx="25.5" cy="19" r="1.9" fill="var(--color-on-secondary)" />
+      <path d="M14 25q6 5 12 0" fill="none" stroke="var(--color-on-secondary)" stroke-width="2" stroke-linecap="round" />
+    </symbol>
+    <symbol id="ico-avatar-adult" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="19" fill="var(--color-secondary)" />
+      <path d="M7.5 15Q20 2.5 32.5 15" fill="none" stroke="var(--color-on-secondary)" stroke-width="2" stroke-linecap="round" />
+      <circle cx="14.5" cy="19.5" r="3.6" fill="none" stroke="var(--color-on-secondary)" stroke-width="2" />
+      <circle cx="25.5" cy="19.5" r="3.6" fill="none" stroke="var(--color-on-secondary)" stroke-width="2" />
+      <path d="M18.1 19.5h3.8M8.5 18.5 6 17.5M31.5 18.5 34 17.5" stroke="var(--color-on-secondary)" stroke-width="2" stroke-linecap="round" fill="none" />
+      <path d="M15 27q5 4 10 0" fill="none" stroke="var(--color-on-secondary)" stroke-width="2" stroke-linecap="round" />
+    </symbol>
+  </defs>
+</svg>
+
+<div class="board">
+
+  <!-- ==================== 分区一：孩子端 · 核心流转（答题 → 得星 → 兑换 → 核销） ==================== -->
+  <h2 class="board-title">孩子端 · 核心流转</h2>
+  <p class="board-note">① 首页 → ② 答题页 → ③ 结算页 → ④ 兑换页；④ 底部入口 → ⑤ 星星记事本 / ⑥ 星星宝藏箱 / ⑮ 孩子端提议板</p>
+  <div class="board-grid">
+
+    <!-- ① 首页 -->
+    <div class="shot">
+      <p class="tag">① 首页<span class="tag-route">/</span></p>
+      <p class="flow">「开始答题」→ ② ·「兑换星星」→ ④ · 页脚「配置」→ ⑧ · 页脚「配对」→ ⑪（仅未配对设备渲染）</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="home" class="page s-home">
+            <div class="clouds" aria-hidden="true">
+              <span class="cloud cloud-1"></span>
+              <span class="cloud cloud-2"></span>
+            </div>
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left"></div>
+              <h1 class="page-title">星星答题</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right"></div>
+            </header>
+            <div class="home-scroll page-scroll">
+              <main class="home-main">
+                <svg class="big-star" viewBox="0 0 24 24" aria-hidden="true"><use href="#ico-star" /></svg>
+                <div class="balance-chip" role="status">
+                  <span class="star-value">37</span>
+                  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><use href="#ico-star" /></svg>
+                  <span class="balance-label">星星</span>
+                </div>
+                <button type="button" class="star-mode-entry">
+                  <span class="star-mode-entry__label">出题方式</span>
+                  <span class="star-mode-entry__value">普通模式</span>
+                  <svg class="star-mode-entry__caret" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><use href="#ico-caret" /></svg>
+                </button>
+                <button type="button" class="star-button star-button--primary star-button--large star-button--edge-full">开始答题</button>
+                <button type="button" class="star-button star-button--standard star-button--large star-button--edge-full">兑换星星</button>
+              </main>
+              <footer class="app-footer">
+                <span class="version-text">V0.13.0</span>
+                <a class="config-link">配置</a>
+                <a class="config-link">配对</a>
+              </footer>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ② 答题页（已作答 · 答对瞬间） -->
+    <div class="shot">
+      <p class="tag">② 答题页<span class="tag-route">/quiz</span></p>
+      <p class="flow">作答后：反馈条 + 底部「下一题」→ 末题变「查看结果」→ ③；顶栏「重新开始 / 放弃答题」均弹二次确认（见 ㉑ 形态）</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="quiz" class="s-quiz">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">放弃答题</button>
+              </div>
+              <h1 class="page-title">答题页</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right">
+                <button type="button" class="star-button star-button--standard star-button--small">重新开始</button>
+              </div>
+            </header>
+            <div class="quiz-scroll page-scroll">
+              <div class="progress-area">
+                <div class="progress-bar" role="progressbar">
+                  <div class="progress-fill" style="width: 30%"></div>
+                </div>
+                <span class="progress-label">第 3 / 10 题</span>
+              </div>
+              <div class="star-container question-card">
+                <button type="button" class="star-icon-btn flag-btn" aria-label="标记这道题">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path class="flag-icon" d="M6.5 3.5v17h1.8v-7.2h10.2l-2.8-3.9 2.8-3.9H8.3V3.5z" />
+                  </svg>
+                </button>
+                <span class="star-chip star-chip--default star-chip--sm">看中文选英文</span>
+                <p class="question-text">大象</p>
+              </div>
+              <div class="options">
+                <button type="button" class="option" disabled>monkey</button>
+                <button type="button" class="option correct" disabled>elephant</button>
+                <button type="button" class="option" disabled>rabbit</button>
+                <button type="button" class="option" disabled>pig</button>
+                <button type="button" class="option-skip" disabled>不会</button>
+              </div>
+              <div class="feedback-area">
+                <div class="feedback-bar feedback-correct">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ico-check" /></svg>
+                  <span>答对了！</span>
+                </div>
+              </div>
+            </div>
+            <footer class="bottom-action-bar">
+              <button type="button" class="star-button star-button--primary star-button--large star-button--edge-full">下一题</button>
+            </footer>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ③ 结算页 -->
+    <div class="shot">
+      <p class="tag">③ 结算页<span class="tag-route">/result</span></p>
+      <p class="flow">「回到首页」→ ①（本轮得星已计入余额与 ⑤ 流水）</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="result" class="s-result">
+            <main class="result-scroll">
+              <div class="result-main">
+                <span class="star-chip star-chip--default star-chip--sm">得分 9 / 10</span>
+                <svg class="big-star" viewBox="0 0 24 24" aria-hidden="true"><use href="#ico-star" /></svg>
+                <div class="earn-visual">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ico-star" /></svg>
+                  <span class="earn-number">+9</span>
+                  <span class="earn-unit">颗星</span>
+                </div>
+                <p class="result-message">答对了这么多，真厉害</p>
+              </div>
+            </main>
+            <footer class="bottom-action-bar">
+              <button type="button" class="star-button star-button--primary star-button--large star-button--edge-full">回到首页</button>
+            </footer>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ④ 兑换页 -->
+    <div class="shot">
+      <p class="tag">④ 兑换页<span class="tag-route">/redeem</span></p>
+      <p class="flow">点「兑换」→ ㉑ 确认弹窗 → 成功后宝物进 ⑥；底部入口 → ⑤ / ⑥ / ⑮</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="redeem" class="page s-redeem">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">兑换页</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right">
+                <div class="balance-chip" role="status">
+                  <span>37</span>
+                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><use href="#ico-star" /></svg>
+                </div>
+              </div>
+            </header>
+            <main class="redeem-main page-scroll">
+              <ul class="reward-list">
+                <li class="reward-item star-container">
+                  <span class="reward-emoji" aria-hidden="true">🥐</span>
+                  <div class="reward-info">
+                    <div class="reward-title">
+                      <span class="reward-name">菠萝油</span>
+                    </div>
+                    <span class="reward-price">5 颗星</span>
+                  </div>
+                  <button type="button" class="star-button star-button--primary star-button--small">兑换</button>
+                </li>
+                <li class="reward-item star-container">
+                  <span class="reward-emoji" aria-hidden="true">📺</span>
+                  <div class="reward-info">
+                    <div class="reward-title">
+                      <span class="reward-name">看 10 分钟电视</span>
+                    </div>
+                    <span class="reward-price">15 颗星</span>
+                  </div>
+                  <button type="button" class="star-button star-button--primary star-button--small">兑换</button>
+                </li>
+                <li class="reward-item star-container">
+                  <span class="reward-emoji" aria-hidden="true">🍲</span>
+                  <div class="reward-info">
+                    <div class="reward-title">
+                      <span class="reward-name">去吃寿喜锅</span>
+                    </div>
+                    <span class="reward-price">25 颗星</span>
+                  </div>
+                  <button type="button" class="star-button star-button--primary star-button--small">兑换</button>
+                </li>
+                <li class="reward-item star-container">
+                  <span class="reward-emoji" aria-hidden="true">🎡</span>
+                  <div class="reward-info">
+                    <div class="reward-title">
+                      <span class="reward-name">去游乐园一次</span>
+                    </div>
+                    <span class="reward-price">30 颗星</span>
+                  </div>
+                  <button type="button" class="star-button star-button--primary star-button--small">兑换</button>
+                </li>
+                <li class="reward-item star-container is-locked">
+                  <span class="reward-emoji" aria-hidden="true">🎢</span>
+                  <div class="reward-info">
+                    <div class="reward-title">
+                      <span class="reward-name">去迪士尼一次</span>
+                      <span class="star-chip star-chip--ghost star-chip--sm">还差 51 颗</span>
+                    </div>
+                    <span class="reward-price">88 颗星</span>
+                  </div>
+                  <button type="button" class="star-button star-button--primary star-button--small" disabled>兑换</button>
+                </li>
+              </ul>
+              <div class="page-links">
+                <button type="button" class="star-button star-button--standard star-button--small">星星记事本</button>
+                <button type="button" class="star-button star-button--standard star-button--small">星星提议板</button>
+                <button type="button" class="star-button star-button--standard star-button--small">星星宝藏箱</button>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑤ 星星记事本 -->
+    <div class="shot">
+      <p class="tag">⑤ 星星记事本<span class="tag-route">/star-log</span></p>
+      <p class="flow">④ 底部入口 → 本屏 ·「返回」→ ④</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="star-log" class="page s-starlog">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">星星记事本</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right">
+                <div class="balance-chip" role="status">
+                  <span>37</span>
+                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><use href="#ico-star" /></svg>
+                </div>
+              </div>
+            </header>
+            <main class="log-main page-scroll">
+              <ul class="ledger-list">
+                <li class="ledger-row">
+                  <span class="stamp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="var(--color-star)" stroke-width="3" stroke-linecap="round" /></svg></span>
+                  <span class="row-source">答题得星</span>
+                  <span class="log-time">5 分钟前</span>
+                  <span class="row-amount amount-earn">+9</span>
+                </li>
+                <li class="ledger-row">
+                  <span class="stamp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14" fill="none" stroke="var(--color-text-secondary)" stroke-width="3" stroke-linecap="round" /></svg></span>
+                  <span class="row-source">兑换：看 10 分钟电视</span>
+                  <span class="log-time">昨天</span>
+                  <span class="row-amount amount-redeem">−15</span>
+                </li>
+                <li class="ledger-row">
+                  <span class="stamp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="var(--color-star)" stroke-width="3" stroke-linecap="round" /></svg></span>
+                  <span class="row-source">满分奖励</span>
+                  <span class="log-time">昨天</span>
+                  <span class="row-amount amount-earn">+3</span>
+                </li>
+                <li class="ledger-row">
+                  <span class="stamp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="var(--color-star)" stroke-width="3" stroke-linecap="round" /></svg></span>
+                  <span class="row-source">答题得星</span>
+                  <span class="log-time">昨天</span>
+                  <span class="row-amount amount-earn">+10</span>
+                </li>
+                <li class="ledger-row">
+                  <span class="stamp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14" fill="none" stroke="var(--color-text-secondary)" stroke-width="3" stroke-linecap="round" /></svg></span>
+                  <span class="row-source">兑换：菠萝油</span>
+                  <span class="log-time">2 天前</span>
+                  <span class="row-amount amount-redeem">−5</span>
+                </li>
+                <li class="ledger-row">
+                  <span class="stamp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="var(--color-star)" stroke-width="3" stroke-linecap="round" /></svg></span>
+                  <span class="row-source">答题得星</span>
+                  <span class="log-time">3 天前</span>
+                  <span class="row-amount amount-earn">+9</span>
+                </li>
+                <li class="ledger-row">
+                  <span class="stamp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="var(--color-star)" stroke-width="3" stroke-linecap="round" /></svg></span>
+                  <span class="row-source">满分奖励</span>
+                  <span class="log-time">5 天前</span>
+                  <span class="row-amount amount-earn">+3</span>
+                </li>
+                <li class="ledger-row">
+                  <span class="stamp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="var(--color-star)" stroke-width="3" stroke-linecap="round" /></svg></span>
+                  <span class="row-source">答题得星</span>
+                  <span class="log-time">5 天前</span>
+                  <span class="row-amount amount-earn">+10</span>
+                </li>
+              </ul>
+            </main>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑥ 星星宝藏箱 -->
+    <div class="shot">
+      <p class="tag">⑥ 星星宝藏箱<span class="tag-route">/prizes</span></p>
+      <p class="flow">④ 底部入口 → 本屏 ·「用完了 / 放弃」→ 二次确认（见 ㉑ 形态）→ 核销成功 toast</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="prizes" class="page s-prizes">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">星星宝藏箱</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right"></div>
+            </header>
+            <main class="prizes-main page-scroll">
+              <ul class="prize-list">
+                <li class="prize-card star-container">
+                  <span class="prize-emoji" aria-hidden="true">📺</span>
+                  <div class="prize-info">
+                    <span class="prize-name">看 10 分钟电视</span>
+                    <span class="prize-date">9月3日兑换</span>
+                  </div>
+                  <div class="prize-actions">
+                    <button type="button" class="star-button star-button--primary star-button--small">用完了</button>
+                    <button type="button" class="star-button star-button--standard star-button--small">放弃</button>
+                  </div>
+                </li>
+                <li class="prize-card star-container">
+                  <span class="prize-emoji" aria-hidden="true">🥐</span>
+                  <div class="prize-info">
+                    <span class="prize-name">菠萝油</span>
+                    <span class="prize-date">9月2日兑换</span>
+                  </div>
+                  <div class="prize-actions">
+                    <button type="button" class="star-button star-button--primary star-button--small">用完了</button>
+                    <button type="button" class="star-button star-button--standard star-button--small">放弃</button>
+                  </div>
+                </li>
+              </ul>
+            </main>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div class="board">
+
+  <!-- ==================== 分区二：家长端 · 数据与设备管理（配对 → 家长页） ==================== -->
+  <h2 class="board-title">家长端 · 数据与设备管理</h2>
+  <p class="board-note">① 页脚「配置」→ ⑦ 家长页；⑦「数据管理」→ ⑧ ·「流水管理」→ ⑨ ·「出题指令」→ ⑩ ·「提议板」→ ⑫；未配对设备 ① 页脚「配对」→ ⑪ 配对页（三步向导）</p>
+  <div class="board-grid">
+
+    <!-- ⑦ 家长页（主屏，含设备与家庭区；测试模式开关卡为页面常驻部分 · 关闭态；家长超能力卡不进快照） -->
+    <div class="shot">
+      <p class="tag">⑦ 家长页<span class="tag-route">/parent</span></p>
+      <p class="flow">「返回」→ ① · 大按钮 → ⑧ / ⑨ / ⑫ / ⑩ · 页尾「组件库」→ ⑱</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="parent" class="page s-parent">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">家长页</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right"></div>
+            </header>
+            <main class="parent-main page-scroll">
+              <div class="star-container question-summary">
+                <p class="question-summary-text">共 20 题 · 有 6 新题 · 最近答题 9月4日</p>
+              </div>
+              <section class="star-container test-mode-card">
+                <div class="card-info">
+                  <h2 class="card-title">测试模式</h2>
+                  <p class="card-desc">测试期间产生的星星流水将在测试关闭时全部撤销</p>
+                </div>
+                <button type="button" class="mode-switch" role="switch" aria-checked="false" aria-label="测试模式">
+                  <span class="switch-track"><span class="switch-thumb"></span></span>
+                </button>
+              </section>
+              <div class="parent-actions">
+                <button type="button" class="star-button star-button--standard star-button--large star-button--edge-full">数据管理</button>
+                <button type="button" class="star-button star-button--standard star-button--large star-button--edge-full">流水管理</button>
+                <button type="button" class="star-button star-button--standard star-button--large star-button--edge-full">提议板</button>
+                <button type="button" class="star-button star-button--standard star-button--large star-button--edge-full">出题指令</button>
+              </div>
+              <section class="device-admin star-container">
+                <h2 class="device-admin-title">设备与家庭</h2>
+                <div class="device-admin-section">
+                  <h3 class="device-admin-section-title">设备</h3>
+                  <ul class="device-admin-list">
+                    <li class="device-admin-row">
+                      <div class="device-admin-main">
+                        <span class="device-admin-name">妈妈的 iPhone</span>
+                        <span class="star-chip star-chip--default star-chip--sm">家长设备</span>
+                        <span class="star-chip star-chip--ghost star-chip--sm">本机</span>
+                      </div>
+                      <div class="device-admin-side">
+                        <span class="device-admin-last-seen">最后活跃 刚刚</span>
+                        <button type="button" class="star-button star-button--standard star-button--small">移除</button>
+                      </div>
+                    </li>
+                    <li class="device-admin-row">
+                      <div class="device-admin-main">
+                        <span class="device-admin-name">星星 iPad</span>
+                        <span class="star-chip star-chip--default star-chip--sm">孩子设备</span>
+                      </div>
+                      <div class="device-admin-side">
+                        <span class="device-admin-last-seen">最后活跃 2 小时前</span>
+                        <button type="button" class="star-button star-button--standard star-button--small">移除</button>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+                <div class="device-admin-section">
+                  <h3 class="device-admin-section-title">家庭码</h3>
+                  <p class="family-code-value">483209</p>
+                  <div class="device-admin-actions">
+                    <button type="button" class="star-button star-button--standard star-button--small">隐藏</button>
+                    <button type="button" class="star-button star-button--standard star-button--small">重置家庭码</button>
+                  </div>
+                </div>
+                <div class="device-admin-section">
+                  <h3 class="device-admin-section-title">快照回滚</h3>
+                  <ul class="device-admin-list">
+                    <li class="device-admin-row">
+                      <span class="device-admin-snapshot-time">3 小时前</span>
+                      <button type="button" class="star-button star-button--standard star-button--small">回滚</button>
+                    </li>
+                    <li class="device-admin-row">
+                      <span class="device-admin-snapshot-time">昨天</span>
+                      <button type="button" class="star-button star-button--standard star-button--small">回滚</button>
+                    </li>
+                  </ul>
+                </div>
+              </section>
+              <a class="config-link">组件库</a>
+            </main>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑧ 数据管理弹窗（管理形态：标题 + 副标题 + 右上关闭钮 + 导出/导入） -->
+    <div class="shot">
+      <p class="tag">⑧ 家长页 · 数据管理弹窗<span class="tag-route">/parent 弹窗</span></p>
+      <p class="flow">⑦「数据管理」→ 本屏 ·「导入」选文件后弹导入确认（正文「本次导入将写入 N 题」+ 取消 / 导入并重置 / 导入并追加）</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="parent" class="page s-parent">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">家长页</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right"></div>
+            </header>
+            <main class="parent-main page-scroll"></main>
+            <div class="star-modal" role="dialog" aria-modal="true">
+              <div class="star-modal__scrim"></div>
+              <div class="star-modal__card">
+                <button type="button" class="star-icon-btn star-modal__close" aria-label="关闭">
+                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><use href="#ico-close" /></svg>
+                </button>
+                <h2 class="star-modal__title">数据管理</h2>
+                <p class="star-modal__desc">管理题库和兑换项数据</p>
+                <div class="star-modal__actions">
+                  <button type="button" class="star-button star-button--primary star-button--large star-button--edge-full">导出</button>
+                  <button type="button" class="star-button star-button--standard star-button--large star-button--edge-full">导入</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑨ 流水管理弹窗（与 ⑧ 同构，副标题不同） -->
+    <div class="shot">
+      <p class="tag">⑨ 家长页 · 流水管理弹窗<span class="tag-route">/parent 弹窗</span></p>
+      <p class="flow">⑦「流水管理」→ 本屏 ·「导入」确认正文「本次导入将写入兑换项 M 项 + 流水 K 条 + 提议 P 条」（取消 / 确认）</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="parent" class="page s-parent">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">家长页</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right"></div>
+            </header>
+            <main class="parent-main page-scroll"></main>
+            <div class="star-modal" role="dialog" aria-modal="true">
+              <div class="star-modal__scrim"></div>
+              <div class="star-modal__card">
+                <button type="button" class="star-icon-btn star-modal__close" aria-label="关闭">
+                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><use href="#ico-close" /></svg>
+                </button>
+                <h2 class="star-modal__title">流水管理</h2>
+                <p class="star-modal__desc">管理星星收支流水</p>
+                <div class="star-modal__actions">
+                  <button type="button" class="star-button star-button--primary star-button--large star-button--edge-full">导出</button>
+                  <button type="button" class="star-button star-button--standard star-button--large star-button--edge-full">导入</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑩ 出题指令页 -->
+    <div class="shot">
+      <p class="tag">⑩ 出题指令页<span class="tag-route">/parent/question-prompt</span></p>
+      <p class="flow">⑦「出题指令」→ 本屏 · 填三参数「生成指令」→ 结果区「复制指令」→ 粘贴给外部 AI 出题 → 导回 ⑧</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="question-prompt" class="page s-questionprompt">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">出题指令</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right"></div>
+            </header>
+            <main class="question-prompt-main page-scroll">
+              <p class="question-prompt-intro">填好下面的信息，生成一段指令，复制给任意 AI（如 ChatGPT / 豆包），它就能帮你出题。</p>
+              <div class="prompt-form star-container">
+                <div class="prompt-field">
+                  <label class="prompt-label">孩子年龄/年级/水平</label>
+                  <input type="text" class="prompt-input" value="7 岁，二年级" />
+                </div>
+                <div class="prompt-field">
+                  <label class="prompt-label">根据什么内容出题</label>
+                  <textarea rows="3" class="prompt-textarea">人教版二年级英语上册 Unit 1–3 的单词和句型</textarea>
+                </div>
+                <div class="prompt-field">
+                  <label class="prompt-label">出几道题</label>
+                  <input type="number" class="prompt-input" value="20" />
+                </div>
+                <button type="button" class="star-button star-button--primary star-button--large star-button--edge-full">生成指令</button>
+              </div>
+              <div class="prompt-result star-container">
+                <textarea rows="12" readonly class="prompt-output" aria-label="生成的出题指令">你是一位专业的儿童英语出题专家。请根据下面的信息，为一个 7 岁、读二年级的孩子出 20 道英语题。
+
+出题范围：人教版二年级英语上册 Unit 1–3 的单词和句型。
+
+要求：
+1. 题型分布：看中文选英文、看英文选中文、挖空选词三种题型混合；
+2. 每题 4 个选项，其中 1 个正确答案，3 个干扰项；
+3. 干扰项使用同范围内的近形词或近音词，不要超出范围；
+4. 输出为 JSON 数组，格式如下……</textarea>
+                <button type="button" class="star-button star-button--primary star-button--large star-button--edge-full">复制指令</button>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑪ 配对页（三步向导 · 第一步） -->
+    <div class="shot">
+      <p class="tag">⑪ 配对页（三步向导 · ①家庭码）<span class="tag-route">/pair</span></p>
+      <p class="flow">① 页脚「配对」→ 本屏 ① 输码 → ② 命名（默认「星星设备」）→ ③ 选角色（家长/孩子二选一，形态同 ⑩ 前两屏选项行）→「配对」回 ①</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="pair" class="page s-pair">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">设备配对</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right"></div>
+            </header>
+            <main class="pair-scroll page-scroll">
+              <form class="pair-form star-container">
+                <label class="pair-field">
+                  <span class="pair-field-label">家庭码</span>
+                  <input type="text" inputmode="numeric" maxlength="6" class="pair-code-input" value="483209" aria-label="家庭码" />
+                  <span class="pair-hint">请输入家长设备上出示的 6 位家庭码</span>
+                </label>
+              </form>
+            </main>
+            <footer class="bottom-action-bar">
+              <button type="button" class="star-button star-button--primary star-button--large star-button--edge-full">下一步</button>
+            </footer>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div class="board">
+
+  <!-- ==================== 分区三：提议板 · 沟通闭环（家长 / 孩子双视角） ==================== -->
+  <h2 class="board-title">提议板 · 沟通闭环</h2>
+  <p class="board-note">家长视角 ⑫ 列表 →（点名标题）⑬ 详情 →（编辑）⑭ 表单；孩子视角 ⑮ 列表 → ⑯ 详情 → ⑰ 表单；双方都点头 → 家长在发布窗口（每天 20:00–21:00）内「发布兑换项」→ 流入 ④ 兑换页列表</p>
+  <div class="board-grid">
+
+    <!-- ⑫ 提议板列表（家长视角） -->
+    <div class="shot">
+      <p class="tag">⑫ 提议板列表（家长视角）<span class="tag-route">/proposals</span></p>
+      <p class="flow">⑦「提议板」→ 本屏 · 点卡标题 → ⑬ ·「改提议」→ ⑭ · 已谈成卡「发布兑换项」→ ④</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="proposals" class="page s-proposals">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">提议板</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right">
+                <button type="button" class="star-button star-button--standard star-button--small">新建提议</button>
+              </div>
+            </header>
+            <main class="proposals-main page-scroll">
+              <p class="window-note">每天 20:00–21:00 内可以由家长发布已经双方同意的提议</p>
+              <ul class="proposal-list">
+                <li class="star-container proposal-card">
+                  <div class="card-head has-badge">
+                    <button type="button" class="proposal-name is-clickable">去游乐园一次</button>
+                    <p class="proposal-price"><span class="star-glyph" aria-hidden="true">★</span>消耗 30 颗星</p>
+                    <span class="card-badge is-done">已谈成</span>
+                  </div>
+                  <div class="camp-sides">
+                    <div class="camp-side">
+                      <svg class="camp-avatar" viewBox="0 0 40 40" role="img" aria-label="孩子"><use href="#ico-avatar-child" /></svg>
+                      <span class="camp-state is-agree">已点头</span>
+                    </div>
+                    <div class="camp-side">
+                      <svg class="camp-avatar" viewBox="0 0 40 40" role="img" aria-label="家长"><use href="#ico-avatar-adult" /></svg>
+                      <span class="camp-state is-agree">已点头</span>
+                    </div>
+                  </div>
+                  <div class="card-actions">
+                    <svg class="camp-avatar camp-avatar--mini" viewBox="0 0 40 40" aria-hidden="true"><use href="#ico-avatar-adult" /></svg>
+                    <button type="button" class="star-button star-button--standard star-button--small">再想想</button>
+                    <button type="button" class="star-button star-button--standard star-button--small">改提议</button>
+                    <button type="button" class="star-button star-button--primary star-button--small">发布兑换项</button>
+                  </div>
+                </li>
+                <li class="star-container proposal-card">
+                  <div class="card-head">
+                    <button type="button" class="proposal-name is-clickable">多看一集动画片</button>
+                    <p class="proposal-price"><span class="star-glyph" aria-hidden="true">★</span>消耗 20 颗星</p>
+                  </div>
+                  <div class="camp-sides">
+                    <div class="camp-side">
+                      <svg class="camp-avatar" viewBox="0 0 40 40" role="img" aria-label="孩子"><use href="#ico-avatar-child" /></svg>
+                      <span class="camp-state">刚刚提议</span>
+                    </div>
+                    <div class="camp-side">
+                      <svg class="camp-avatar" viewBox="0 0 40 40" role="img" aria-label="家长"><use href="#ico-avatar-adult" /></svg>
+                      <span class="camp-state">还在考虑</span>
+                    </div>
+                  </div>
+                  <div class="card-actions">
+                    <svg class="camp-avatar camp-avatar--mini" viewBox="0 0 40 40" aria-hidden="true"><use href="#ico-avatar-adult" /></svg>
+                    <button type="button" class="star-button star-button--standard star-button--small">同意</button>
+                    <button type="button" class="star-button star-button--standard star-button--small">改提议</button>
+                  </div>
+                </li>
+                <li class="star-container proposal-card">
+                  <div class="card-head">
+                    <button type="button" class="proposal-name is-clickable">去海洋馆看白鲸</button>
+                    <p class="proposal-price"><span class="star-glyph" aria-hidden="true">★</span>消耗 40 颗星</p>
+                  </div>
+                  <div class="camp-sides">
+                    <div class="camp-side">
+                      <svg class="camp-avatar" viewBox="0 0 40 40" role="img" aria-label="孩子"><use href="#ico-avatar-child" /></svg>
+                      <span class="camp-state">已修改提议</span>
+                    </div>
+                    <div class="camp-side">
+                      <svg class="camp-avatar" viewBox="0 0 40 40" role="img" aria-label="家长"><use href="#ico-avatar-adult" /></svg>
+                      <span class="camp-state">还在考虑</span>
+                    </div>
+                  </div>
+                  <div class="card-actions">
+                    <svg class="camp-avatar camp-avatar--mini" viewBox="0 0 40 40" aria-hidden="true"><use href="#ico-avatar-adult" /></svg>
+                    <button type="button" class="star-button star-button--standard star-button--small">同意</button>
+                    <button type="button" class="star-button star-button--standard star-button--small">改提议</button>
+                  </div>
+                </li>
+                <li class="star-container proposal-card is-voided">
+                  <div class="card-head has-badge">
+                    <button type="button" class="proposal-name is-clickable">买一台冰淇淋机</button>
+                    <p class="proposal-price"><span class="star-glyph" aria-hidden="true">★</span>消耗 120 颗星</p>
+                    <span class="card-badge is-void">已作废</span>
+                  </div>
+                  <div class="card-actions">
+                    <button type="button" class="star-button star-button--standard star-button--small">查看详情</button>
+                  </div>
+                </li>
+              </ul>
+            </main>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑬ 提议详情（家长视角） -->
+    <div class="shot">
+      <p class="tag">⑬ 提议详情（家长视角）<span class="tag-route">/proposals/:id</span></p>
+      <p class="flow">⑫ 点标题 → 本屏 ·「编辑」→ ⑭ ·「作废」→ 二次确认（见 ㉑ 形态）后转已作废</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="proposal-detail" class="page s-proposaldetail">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">提议详情</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right"></div>
+            </header>
+            <main class="detail-main page-scroll">
+              <div class="detail-head">
+                <h2 class="detail-name">去游乐园一次</h2>
+                <span class="star-chip star-chip--default star-chip--md">沟通中</span>
+              </div>
+              <dl class="detail-fields star-container">
+                <div class="detail-row">
+                  <dt>兑换消耗</dt>
+                  <dd>消耗 30 颗星</dd>
+                </div>
+                <div class="detail-row">
+                  <dt>说明文字</dt>
+                  <dd>周六全天，妈妈陪你去</dd>
+                </div>
+                <div class="detail-row">
+                  <dt>创建时间</dt>
+                  <dd>2026-09-03 19:12</dd>
+                </div>
+                <div class="detail-row">
+                  <dt>最后变更</dt>
+                  <dd>2026-09-04 20:05</dd>
+                </div>
+                <div class="detail-row">
+                  <dt>家长状态</dt>
+                  <dd>已同意</dd>
+                </div>
+                <div class="detail-row">
+                  <dt>孩子状态</dt>
+                  <dd>已同意</dd>
+                </div>
+                <div class="detail-row">
+                  <dt>整体状态</dt>
+                  <dd>沟通中</dd>
+                </div>
+              </dl>
+              <div class="detail-actions">
+                <button type="button" class="star-button star-button--standard star-button--small">编辑</button>
+                <button type="button" class="star-button star-button--standard star-button--small void-btn">作废</button>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑭ 提议表单（家长视角 · 编辑态） -->
+    <div class="shot">
+      <p class="tag">⑭ 提议表单（家长视角 · 编辑态）<span class="tag-route">/proposals/:id/edit</span></p>
+      <p class="flow">⑫「新建提议」或「改提议」/ ⑬「编辑」→ 本屏 ·「保存」回 ⑫（对方状态重置为还在考虑）</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="proposal-edit" class="s-proposaledit">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">提议表单</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right"></div>
+            </header>
+            <main class="edit-scroll">
+              <form class="proposal-form star-container">
+                <label class="form-field">
+                  <span class="field-label">想换什么</span>
+                  <input type="text" class="form-name-input" value="去游乐园一次" />
+                </label>
+                <label class="form-field">
+                  <span class="field-label">花多少星星</span>
+                  <input type="text" inputmode="numeric" class="form-price-input" value="30" />
+                </label>
+                <label class="form-field">
+                  <span class="field-label">说明文字</span>
+                  <textarea rows="3" class="form-desc-input">周六全天，妈妈陪你去</textarea>
+                </label>
+              </form>
+            </main>
+            <footer class="bottom-action-bar">
+              <button type="button" class="star-button star-button--primary star-button--large star-button--edge-full">保存</button>
+            </footer>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑮ 提议板列表（孩子视角） -->
+    <div class="shot">
+      <p class="tag">⑮ 提议板列表（孩子视角）<span class="tag-route">/child/proposals</span></p>
+      <p class="flow">④ 底部「星星提议板」→ 本屏 · 表态 / 改提议同 ⑰ · 孩子端无发布钮与查看详情</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="proposals" class="page s-proposals">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">星星提议板</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right">
+                <button type="button" class="star-button star-button--standard star-button--small">新建提议</button>
+              </div>
+            </header>
+            <main class="proposals-main page-scroll">
+              <p class="window-note">每天 20:00–21:00 内可以由家长发布已经双方同意的提议</p>
+              <ul class="proposal-list">
+                <li class="star-container proposal-card">
+                  <div class="card-head has-badge">
+                    <h3 class="proposal-name">去游乐园一次</h3>
+                    <p class="proposal-price"><span class="star-glyph" aria-hidden="true">★</span>消耗 30 颗星</p>
+                    <span class="card-badge is-done">已谈成</span>
+                  </div>
+                  <div class="camp-sides">
+                    <div class="camp-side">
+                      <svg class="camp-avatar" viewBox="0 0 40 40" role="img" aria-label="家长"><use href="#ico-avatar-adult" /></svg>
+                      <span class="camp-state is-agree">已点头</span>
+                    </div>
+                    <div class="camp-side">
+                      <svg class="camp-avatar" viewBox="0 0 40 40" role="img" aria-label="孩子"><use href="#ico-avatar-child" /></svg>
+                      <span class="camp-state is-agree">已点头</span>
+                    </div>
+                  </div>
+                  <div class="card-actions">
+                    <svg class="camp-avatar camp-avatar--mini" viewBox="0 0 40 40" aria-hidden="true"><use href="#ico-avatar-child" /></svg>
+                    <button type="button" class="star-button star-button--standard star-button--small">再想想</button>
+                    <button type="button" class="star-button star-button--standard star-button--small">改提议</button>
+                  </div>
+                </li>
+                <li class="star-container proposal-card">
+                  <div class="card-head">
+                    <h3 class="proposal-name">多看一集动画片</h3>
+                    <p class="proposal-price"><span class="star-glyph" aria-hidden="true">★</span>消耗 20 颗星</p>
+                  </div>
+                  <div class="camp-sides">
+                    <div class="camp-side">
+                      <svg class="camp-avatar" viewBox="0 0 40 40" role="img" aria-label="家长"><use href="#ico-avatar-adult" /></svg>
+                      <span class="camp-state">还在考虑</span>
+                    </div>
+                    <div class="camp-side">
+                      <svg class="camp-avatar" viewBox="0 0 40 40" role="img" aria-label="孩子"><use href="#ico-avatar-child" /></svg>
+                      <span class="camp-state is-agree">已点头</span>
+                    </div>
+                  </div>
+                  <div class="card-actions">
+                    <svg class="camp-avatar camp-avatar--mini" viewBox="0 0 40 40" aria-hidden="true"><use href="#ico-avatar-child" /></svg>
+                    <button type="button" class="star-button star-button--standard star-button--small">再想想</button>
+                    <button type="button" class="star-button star-button--standard star-button--small">改提议</button>
+                  </div>
+                </li>
+                <li class="star-container proposal-card">
+                  <div class="card-head">
+                    <h3 class="proposal-name">去海洋馆看白鲸</h3>
+                    <p class="proposal-price"><span class="star-glyph" aria-hidden="true">★</span>消耗 40 颗星</p>
+                  </div>
+                  <div class="camp-sides">
+                    <div class="camp-side">
+                      <svg class="camp-avatar" viewBox="0 0 40 40" role="img" aria-label="家长"><use href="#ico-avatar-adult" /></svg>
+                      <span class="camp-state is-agree">已点头</span>
+                    </div>
+                    <div class="camp-side">
+                      <svg class="camp-avatar" viewBox="0 0 40 40" role="img" aria-label="孩子"><use href="#ico-avatar-child" /></svg>
+                      <span class="camp-state">还在考虑</span>
+                    </div>
+                  </div>
+                  <div class="card-actions">
+                    <svg class="camp-avatar camp-avatar--mini" viewBox="0 0 40 40" aria-hidden="true"><use href="#ico-avatar-child" /></svg>
+                    <button type="button" class="star-button star-button--standard star-button--small">同意</button>
+                    <button type="button" class="star-button star-button--standard star-button--small">改提议</button>
+                  </div>
+                </li>
+                <li class="star-container proposal-card is-voided">
+                  <div class="card-head has-badge">
+                    <h3 class="proposal-name">买一台冰淇淋机</h3>
+                    <p class="proposal-price"><span class="star-glyph" aria-hidden="true">★</span>消耗 120 颗星</p>
+                    <span class="card-badge is-void">已作废</span>
+                  </div>
+                </li>
+              </ul>
+            </main>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑯ 提议详情（孩子视角） -->
+    <div class="shot">
+      <p class="tag">⑯ 提议详情（孩子视角）<span class="tag-route">/child/proposals/:id</span></p>
+      <p class="flow">⑮ → ⑯ 通路：孩子端列表暂无详情入口（作废卡无按钮、卡名不可点）·「编辑」→ ⑰ · 无作废钮</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="proposal-detail" class="page s-proposaldetail">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">提议详情</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right"></div>
+            </header>
+            <main class="detail-main page-scroll">
+              <div class="detail-head">
+                <h2 class="detail-name">去游乐园一次</h2>
+                <span class="star-chip star-chip--default star-chip--md">沟通中</span>
+              </div>
+              <dl class="detail-fields star-container">
+                <div class="detail-row">
+                  <dt>兑换消耗</dt>
+                  <dd>消耗 30 颗星</dd>
+                </div>
+                <div class="detail-row">
+                  <dt>说明文字</dt>
+                  <dd>周六全天，妈妈陪你去</dd>
+                </div>
+                <div class="detail-row">
+                  <dt>创建时间</dt>
+                  <dd>2026-09-03 19:12</dd>
+                </div>
+                <div class="detail-row">
+                  <dt>最后变更</dt>
+                  <dd>2026-09-04 20:05</dd>
+                </div>
+                <div class="detail-row">
+                  <dt>家长状态</dt>
+                  <dd>已同意</dd>
+                </div>
+                <div class="detail-row">
+                  <dt>孩子状态</dt>
+                  <dd>已同意</dd>
+                </div>
+                <div class="detail-row">
+                  <dt>整体状态</dt>
+                  <dd>沟通中</dd>
+                </div>
+              </dl>
+              <div class="detail-actions">
+                <button type="button" class="star-button star-button--standard star-button--small">编辑</button>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑰ 提议表单（孩子视角 · 新建态） -->
+    <div class="shot">
+      <p class="tag">⑰ 提议表单（孩子视角 · 新建态）<span class="tag-route">/child/proposals/new</span></p>
+      <p class="flow">⑮「新建提议」→ 本屏 ·「保存」回 ⑮（新建自动同意自己一方）</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="proposal-edit" class="s-proposaledit">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">提议表单</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right"></div>
+            </header>
+            <main class="edit-scroll">
+              <form class="proposal-form star-container">
+                <label class="form-field">
+                  <span class="field-label">想换什么</span>
+                  <input type="text" class="form-name-input" value="买一盒 12 色水彩笔" />
+                </label>
+                <label class="form-field">
+                  <span class="field-label">花多少星星</span>
+                  <input type="text" inputmode="numeric" class="form-price-input" value="25" />
+                </label>
+                <label class="form-field">
+                  <span class="field-label">说明文字</span>
+                  <textarea rows="3" class="form-desc-input">美术课要用的，就差这一种啦</textarea>
+                </label>
+              </form>
+            </main>
+            <footer class="bottom-action-bar">
+              <button type="button" class="star-button star-button--primary star-button--large star-button--edge-full">保存</button>
+            </footer>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div class="board">
+
+  <!-- ==================== 分区四：组件库与状态变体 ==================== -->
+  <h2 class="board-title">组件库与状态变体</h2>
+  <p class="board-note">⑦ 页尾「组件库」→ ⑱ 列表 → ⑲ 单组件展示（代表：star-button-standard）· ⑳ 空态代表（兑换页）· ㉑ 确认弹窗代表（兑换确认）</p>
+  <div class="board-grid">
+
+    <!-- ⑱ 组件库列表 -->
+    <div class="shot">
+      <p class="tag">⑱ 组件库列表<span class="tag-route">/components</span></p>
+      <p class="flow">⑦ 页尾「组件库」→ 本屏 · 点任一行 → ⑲（该组件的形态平铺）</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="components" class="page s-componentslist">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">组件库</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right"></div>
+            </header>
+            <main class="components-main page-scroll">
+              <a class="component-row star-container">
+                <span class="component-name">按钮</span>
+                <span class="component-key">star-button-standard</span>
+              </a>
+              <a class="component-row star-container">
+                <span class="component-name">弹窗</span>
+                <span class="component-key">star-modal-standard</span>
+              </a>
+              <a class="component-row star-container">
+                <span class="component-name">导航栏</span>
+                <span class="component-key">star-nav-bar</span>
+              </a>
+              <a class="component-row star-container">
+                <span class="component-name">标签</span>
+                <span class="component-key">star-chip</span>
+              </a>
+              <a class="component-row star-container">
+                <span class="component-name">图标钮</span>
+                <span class="component-key">star-icon-btn</span>
+              </a>
+              <a class="component-row star-container">
+                <span class="component-name">出题方式入口</span>
+                <span class="component-key">star-mode-entry</span>
+              </a>
+            </main>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑲ 组件展示（代表：star-button-standard 形态矩阵） -->
+    <div class="shot">
+      <p class="tag">⑲ 组件展示 · 按钮<span class="tag-route">/components/star-button-standard</span></p>
+      <p class="flow">⑱ 点「按钮」行 → 本屏（variant × size 全矩阵 + disabled，格内标注为技术参数）</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="component-showcase" class="page s-showcase">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">按钮</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right"></div>
+            </header>
+            <main class="showcase-main page-scroll">
+              <div class="showcase-cell">
+                <span class="showcase-label">primary · large</span>
+                <button type="button" class="star-button star-button--primary star-button--large star-button--edge-inset">按钮</button>
+              </div>
+              <div class="showcase-cell">
+                <span class="showcase-label">primary · small</span>
+                <button type="button" class="star-button star-button--primary star-button--small">按钮</button>
+              </div>
+              <div class="showcase-cell">
+                <span class="showcase-label">standard · large</span>
+                <button type="button" class="star-button star-button--standard star-button--large star-button--edge-inset">按钮</button>
+              </div>
+              <div class="showcase-cell">
+                <span class="showcase-label">standard · small</span>
+                <button type="button" class="star-button star-button--standard star-button--small">按钮</button>
+              </div>
+              <div class="showcase-cell">
+                <span class="showcase-label">primary · large · disabled</span>
+                <button type="button" class="star-button star-button--primary star-button--large star-button--edge-inset" disabled>按钮</button>
+              </div>
+              <div class="showcase-cell">
+                <span class="showcase-label">primary · small · disabled</span>
+                <button type="button" class="star-button star-button--primary star-button--small" disabled>按钮</button>
+              </div>
+              <div class="showcase-cell">
+                <span class="showcase-label">standard · large · disabled</span>
+                <button type="button" class="star-button star-button--standard star-button--large star-button--edge-inset" disabled>按钮</button>
+              </div>
+              <div class="showcase-cell">
+                <span class="showcase-label">standard · small · disabled</span>
+                <button type="button" class="star-button star-button--standard star-button--small" disabled>按钮</button>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑳ 空态代表（兑换页空态） -->
+    <div class="shot">
+      <p class="tag">⑳ 空态代表 · 兑换页<span class="tag-route">/redeem · 空态</span></p>
+      <p class="flow">兑换项列表为空时（家长尚未配置兑换项）· 其余空态（⑤ 记事本 / ⑥ 宝藏箱 / ⑫⑮ 提议板）同构：居中星星图 + 一句引导文案</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="redeem" class="page s-redeem">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">兑换页</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right">
+                <div class="balance-chip" role="status">
+                  <span>0</span>
+                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><use href="#ico-star" /></svg>
+                </div>
+              </div>
+            </header>
+            <main class="redeem-main page-scroll">
+              <div class="empty-state">
+                <svg viewBox="0 0 24 24" width="48" height="48" aria-hidden="true"><use href="#ico-star" /></svg>
+                <p class="empty-text">还没有可兑换的奖品，快去答题攒星星吧</p>
+              </div>
+              <div class="page-links">
+                <button type="button" class="star-button star-button--standard star-button--small">星星记事本</button>
+                <button type="button" class="star-button star-button--standard star-button--small">星星提议板</button>
+                <button type="button" class="star-button star-button--standard star-button--small">星星宝藏箱</button>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ㉑ 确认弹窗代表（兑换确认） -->
+    <div class="shot">
+      <p class="tag">㉑ 确认弹窗代表 · 兑换确认<span class="tag-route">/redeem · 弹窗</span></p>
+      <p class="flow">④ 点「兑换」→ 本屏 · 全 app 确认弹窗同构（正文 + 取消 / 确认双钮等宽，蒙层点击 = 取消）</p>
+      <div class="phone">
+        <div class="screen">
+          <div data-page="redeem" class="page s-redeem">
+            <header class="star-nav-bar page-header">
+              <div class="star-nav-bar__side star-nav-bar__side--left">
+                <button type="button" class="star-button star-button--standard star-button--small">返回</button>
+              </div>
+              <h1 class="page-title">兑换页</h1>
+              <div class="star-nav-bar__side star-nav-bar__side--right">
+                <div class="balance-chip" role="status">
+                  <span>37</span>
+                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><use href="#ico-star" /></svg>
+                </div>
+              </div>
+            </header>
+            <main class="redeem-main page-scroll">
+              <ul class="reward-list">
+                <li class="reward-item star-container">
+                  <span class="reward-emoji" aria-hidden="true">📺</span>
+                  <div class="reward-info">
+                    <div class="reward-title">
+                      <span class="reward-name">看 10 分钟电视</span>
+                    </div>
+                    <span class="reward-price">15 颗星</span>
+                  </div>
+                  <button type="button" class="star-button star-button--primary star-button--small">兑换</button>
+                </li>
+              </ul>
+            </main>
+            <div class="star-modal" role="dialog" aria-modal="true" aria-labelledby="star-modal-text">
+              <div class="star-modal__scrim"></div>
+              <div class="star-modal__card">
+                <p class="star-modal__text">用 15 颗星兑换「看 10 分钟电视」？兑换后剩余 22 颗</p>
+                <div class="star-modal__actions">
+                  <button type="button" class="star-button star-button--standard star-button--small">取消</button>
+                  <button type="button" class="star-button star-button--primary star-button--small">确认</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

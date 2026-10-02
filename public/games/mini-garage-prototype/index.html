@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>迷你车库 · 精致玩具试跑</title>
+<style>
+:root{--ink:#233737;--paper:#f3f1e9;--card:#fffefa;--line:#d9ddd4;--accent:#126d61;--sand:#e9c885;--muted:#64736d;--radius:18px;--gap:16px;--small:13px;--normal:16px;--large:28px}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);font:var(--normal)/1.6 system-ui,-apple-system,sans-serif}
+main{max-width:760px;margin:auto;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+h1,h2,p{margin:0 0 10px}h1{font-size:var(--large)}h2{font-size:var(--normal)}small,.muted{color:var(--muted);font-size:var(--small)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:var(--gap);margin-bottom:var(--gap)}
+button,select{font:inherit;color:inherit}button{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px 12px;cursor:pointer;min-height:48px;touch-action:manipulation}
+button:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button[aria-pressed=true],.primary{background:var(--accent);color:white}button:disabled{opacity:.45;cursor:default}
+.wide{width:100%}.choices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 18px}.choices small{display:block;color:inherit;font-size:12px}
+.route{display:flex;gap:4px;margin:12px 0}.route span{flex:1;padding:8px 3px;text-align:center;border-radius:6px;font-size:12px;background:#e1e7e1}.route span[data-surface=sand]{background:var(--sand)}.route span[data-surface=gravel]{background:#b8baa5}
+.track-choices{display:grid;gap:8px;margin-bottom:12px}.track-choices button{text-align:left}.track-choices small{display:block;color:inherit;font-size:12px}
+summary{cursor:pointer;min-height:48px;display:flex;align-items:center;font-weight:600}summary::before{content:'＋';margin-right:8px}details[open]>summary::before{content:'−'}
+select{max-width:100%;padding:8px;background:var(--card);border:1px solid var(--line);border-radius:8px}.space-top{margin-top:8px}
+body[data-screen=drive]{overflow:hidden;overscroll-behavior:none}
+body[data-screen=drive] main{height:100vh;height:100dvh;overflow:hidden}
+.drive{height:100%;min-height:0;display:flex;flex-direction:column;gap:8px}
+.race-top{flex:none}.race-nav{display:flex;align-items:center;justify-content:space-between;gap:8px}.race-nav small{text-align:center;line-height:1.2}.race-nav button{font-size:var(--small)}
+.race-title{display:flex;flex-direction:column;text-align:center}
+.hud{display:flex;justify-content:space-between;gap:8px;font-size:var(--small);font-variant-numeric:tabular-nums;margin-top:4px}
+progress{display:block;width:100%;height:8px;margin-top:6px;accent-color:var(--accent)}
+.track{position:relative;flex:1;min-height:0;overflow:hidden;background:#d7ddd3;border-radius:var(--radius)}
+canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none}
+.overlay{position:absolute;inset:0;display:grid;place-items:center;background:#eff3e8df;padding:16px;text-align:center;overflow:auto}.overlay>div{max-width:350px}
+.controls{flex:none;display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:8px}.controls button{min-width:0;min-height:56px;padding:8px 4px;font-weight:600}
+.controls button[data-cue=true]{background:var(--sand);color:var(--ink);outline:3px solid var(--accent);outline-offset:-3px}
+.steer{touch-action:none;user-select:none;-webkit-user-select:none}.hint{flex:none;text-align:center;margin:0;font-size:12px;color:var(--muted)}
+#feedback{white-space:pre-line}table{width:100%;border-collapse:collapse;font-size:var(--small)}td,th{padding:8px 4px;border-bottom:1px solid var(--line);text-align:left}.scroll{overflow:auto}.status{font-size:var(--small);color:var(--muted)}
+@media(max-height:500px){.drive{gap:4px}.hint{display:none}.race-nav button{min-height:44px;padding:6px 10px}.controls button{min-height:48px}.hud{margin-top:0}progress{margin-top:2px}}
+</style>
+<link rel="stylesheet" href="./playable-art.css?rev=art-play-01">
+</head>
+<body data-screen="setup"><main>
+<nav id="sessionBar" aria-label="游戏会话"><p id="sessionStatus" role="status">正在准备游戏…</p><button id="exitGame" hidden>退出游戏</button></nav>
+<section id="setupScreen" aria-label="选择配置">
+<header class="garage-header"><div class="garage-brand"><b>迷你车库</b><small>MINI GARAGE</small></div><p class="eyebrow">BUILD A LITTLE ADVENTURE</p><h1 id="setupTitle" tabindex="-1">把主意，装上车。</h1><p class="muted">先看赛道，再配零件。你的设计和驾驶，一起决定这一圈。</p></header>
+<div class="garage-hero"><img id="gameHero" src="./art-assets/hero-road-boost.webp" width="627" height="627" alt="探索者玩具车：公路胎 × 加速喷口"><span class="hero-badge">P01 · 探索者</span><div class="hero-configuration"><b id="heroConfiguration" aria-live="polite">公路胎 × 加速喷口</b><small>换上零件，去试一圈</small></div></div>
+<p class="playtest-note">选赛道、配零件，开出自己的路线 · 游戏成绩仅在本页展示</p>
+<section class="card"><h2>01 / 选择赛道</h2><div id="trackChoices" class="track-choices"><button data-value="sprint" aria-pressed="true">直道快线<small>硬地 · 连续避障 · 无缓速带</small></button><button data-value="gravel" aria-pressed="false">碎石小径<small>沙地与碎石 · 避障 · 6 组跳台</small></button><button data-value="workshop" aria-pressed="false">跳台工坊<small>混合路面 · 绕障对准 · 12 组跳台</small></button></div><p id="routeSummary" class="status"></p><div id="routePreview" class="route" aria-label="路面顺序"></div><small id="routeTip"></small></section>
+<section class="card"><h2>02 / 装上你的主意</h2><b class="parts-label">选择轮胎</b><div class="choices" id="tires"><button data-value="road" aria-pressed="true"><i class="tire-icon road-tire" aria-hidden="true"></i><span>公路胎<small>硬地快 · 碎石更颠</small></span></button><button data-value="offroad" aria-pressed="false"><i class="tire-icon offroad-tire" aria-hidden="true"></i><span>越野胎<small>松软路面稳 · 硬地较慢</small></span></button></div><b class="parts-label">选择装置</b><div class="choices" id="gadgets"><button data-value="boost" aria-pressed="true"><img src="./art-assets/track-kit/icon-boost.png" alt="" width="40" height="40"><span>加速喷口<small>直道冲刺 · 留好路段</small></span></button><button data-value="jump" aria-pressed="false"><img src="./art-assets/track-kit/icon-jump.png" alt="" width="40" height="40"><span>弹跳装置<small>自己找时机 · 跃过去</small></span></button></div><div class="start-dock"><p id="setupStatus" class="status"></p><button id="start" class="primary wide" disabled>正在准备小车…</button></div><p id="assetStatus" class="status asset-status" role="status">正在准备本地美术素材…</p><button id="retryAssets" class="wide" hidden>重新加载素材</button><p class="muted space-top">自动前进；拖动赛道转向，或按住底部左右键。另一只手可同时使用装置。前 3 秒热身，随后逐渐提速；每局约一分钟。</p></section>
+<details class="card"><summary>本页试跑记录</summary><div class="scroll"><table><thead><tr><th>赛道</th><th>搭配</th><th>用时</th><th>碰障</th></tr></thead><tbody id="history"></tbody></table></div><p class="muted">关闭页面后清空。</p></details>
+</section>
+<section id="driveScreen" class="drive" aria-label="驾驶赛道" hidden>
+<header class="race-top"><nav class="race-nav" aria-label="驾驶操作"><button id="garage">返回首页</button><div class="race-title"><small id="raceName">MINI GARAGE</small><small id="paceLabel">热身</small></div><button id="pause">暂停</button></nav><div class="hud"><b id="surface">硬地直道</b><span id="clock">0.0 秒</span><span id="speed">0 km/h</span></div><progress id="progress" max="5400" value="0" aria-label="赛道进度"></progress></header>
+<div class="track"><canvas id="scene" aria-label="驾驶赛道，左右拖动转向"></canvas><div id="overlay" class="overlay" hidden><div><h2 id="overlayTitle">已暂停</h2><p id="overlayText"></p><button id="resume" class="primary">继续驾驶</button></div></div></div>
+<div class="controls"><button class="steer" id="left" aria-label="向左转">◀ 左转</button><button id="activate" class="primary"><img id="activeIcon" src="./art-assets/track-kit/icon-boost.png" alt="" width="27" height="27"><span id="activeLabel">装置待命</span></button><button class="steer" id="right" aria-label="向右转">右转 ▶</button></div><p class="hint">拖动赛道或按住左右转向 · 底部按钮使用装置</p>
+</section>
+<section id="resultScreen" aria-label="试跑结算" hidden>
+<div class="result-mark" aria-hidden="true">✓</div><small class="eyebrow">试跑完成 / 每次都有新发现</small><h1 id="resultTitle" tabindex="-1">你的设计跑起来了！</h1><section class="card"><h2 id="resultTime"></h2><p id="resultConfig"></p><p id="feedback" aria-live="polite"></p><button id="replay" class="primary wide">同赛道再玩一遍</button><button id="backToSetup" class="wide space-top">返回首页</button><p class="muted space-top">再玩可重新选赛道、配零件；嵌入模式需等待宿主重新确认开局。</p></section>
+<details class="card"><summary>本局详细状态</summary><p id="telemetry" class="status"></p></details>
+</section>
+</main>
+<script>
+// PROTOTYPE: deterministic, DOM-free model. Distances/speeds are game units.
+const GarageModel = (() => {
+ // Agility baseline: world units, not physical metres. Keep the timing knobs together.
+ const tuning=Object.freeze({warmup:3,fullPaceAt:24,paceGain:.25,
+  roadSpeed:80,roadRoughSpeed:64,offroadSpeed:74,offroadRoughSpeed:78,
+  steering:2.4,dragGain:12,roughGrip:.75,offroadGrip:.92,response:4,
+  boostMultiplier:1.6,boostDuration:1,boostCooldown:5,boostResponse:8,
+  jumpDuration:.65,jumpCharge:.10,jumpCooldown:3,bandSpeed:28,hitRetention:.6,offroadRetention:.75});
+ const lapLength=1800,laps=3,length=lapLength*laps,bandLength=14,jumpDuration=tuning.jumpDuration;
+ // Use simulated playing time: pause/background never advances the pace.
+ function paceAt(seconds){
+  const progress=Math.max(0,Math.min(1,(seconds-tuning.warmup)/(tuning.fullPaceAt-tuning.warmup)));
+  return 1+tuning.paceGain*progress*progress*(3-2*progress);
+ }
+ const tracks={
+  sprint:{name:'直道快线',description:'全程硬地 · 连续避障 · 无缓速带',curve:.12,
+   parts:[{end:1800,surface:'road'}],bands:[],ramps:[],
+   obstacles:[[120,-.28],[220,.25],[320,0],[430,.3],[540,-.25],[650,.15],[760,-.3],[870,0],[980,.3],[1090,-.2],[1200,.25],[1310,-.3],[1420,0],[1540,.3],[1660,-.25]]},
+  gravel:{name:'碎石小径',description:'沙地与碎石 · 轮胎抓地考验 · 6 组跳台与缓速带',curve:.22,
+   parts:[{end:260,surface:'road'},{end:820,surface:'gravel'},{end:1160,surface:'sand'},{end:1580,surface:'gravel'},{end:1800,surface:'road'}],
+   bands:[620,1300],ramps:[{z:612,x:-.24},{z:1292,x:.3}],
+   obstacles:[[130,.25],[240,-.2],[360,.28],[460,0],[532,-.24],[800,.26],[920,-.24],[1040,0],[1140,-.25],[1212,.3],[1440,-.28],[1560,.24],[1690,0]]},
+  workshop:{name:'跳台工坊',description:'混合路面 · 左右错位跳台 · 12 组跳台与缓速带',curve:.23,
+   parts:[{end:460,surface:'road'},{end:840,surface:'sand'},{end:1240,surface:'gravel'},{end:1800,surface:'road'}],
+   bands:[320,690,1090,1510],ramps:[{z:312,x:-.28},{z:682,x:.3},{z:1082,x:-.3},{z:1502,x:.26}],
+   obstacles:[[120,0],[190,.3],[450,-.28],[540,0],[602,.3],[810,-.26],[900,.26],[995,.25],[1210,0],[1310,-.28],[1422,.26],[1660,-.26],[1740,.2]]}
+ };
+ // Extend the authored route rather than stretching its gaps: retain ~one minute
+ // of play at the new speed. Each repeated event has its own identity.
+ for(const track of Object.values(tracks)){
+  const {parts,bands,ramps,obstacles}=track;
+  track.parts=Array.from({length:laps},(_,lap)=>parts.map(p=>({...p,end:p.end+lap*lapLength}))).flat();
+  track.bands=Array.from({length:laps},(_,lap)=>bands.map(z=>z+lap*lapLength)).flat();
+  track.ramps=Array.from({length:laps},(_,lap)=>ramps.map(r=>({...r,z:r.z+lap*lapLength}))).flat();
+  track.obstacles=Array.from({length:laps},(_,lap)=>obstacles.map(([z,x])=>({z:z+lap*lapLength,x}))).flat();
+ }
+ const trackFor=id=>tracks[id]||tracks.sprint;
+ const bandsFor=id=>trackFor(id).bands;
+ const surfaceAt=(z,id='sprint')=>trackFor(id).parts.find(p=>z<p.end)?.surface||'road';
+ const center=(z,id='sprint')=>Math.sin(z/140)*trackFor(id).curve+Math.sin(z/330)*.1;
+ function create(tire,gadget,trackId='sprint'){
+  return {tire,gadget,trackId,phase:'running',z:0,x:center(0,trackId),speed:0,time:0,cooldown:0,active:0,boostStartedAt:-Infinity,air:0,airTotal:0,charge:0,landing:0,jumpSource:null,rampJumps:0,hits:0,offTime:0,used:0,cleared:0,dodged:0,checked:new Set(),rampChecked:new Set(),bandGrounded:new Set(),bandSeen:new Set(),bandDone:new Set(),bandsCleared:0,bandTime:0,slowTime:0,segments:{road:0,sand:0,gravel:0},distance:{road:0,sand:0,gravel:0}};
+ }
+ // Same trajectory for both sources. Never extend/relaunch a jump already in flight.
+ function launch(s,source){s.air=jumpDuration;s.airTotal=jumpDuration;s.landing=0;s.charge=0;s.jumpSource=source}
+ function activate(s){
+  if(s.phase!=='running'||s.cooldown>0||(s.gadget==='jump'&&(s.air>0||s.charge>0)))return;
+  s.used++;if(s.gadget==='boost'){s.active=tuning.boostDuration;s.boostStartedAt=s.time;s.cooldown=tuning.boostCooldown}else{s.charge=tuning.jumpCharge;s.cooldown=tuning.jumpCooldown}
+ }
+ function step(s,dt,steer){
+  if(s.phase!=='running')return;
+  const track=trackFor(s.trackId),before=s.z,surface=surfaceAt(s.z,s.trackId),wasAir=s.air>0,wasCharging=s.charge>0;
+  s.time+=dt;s.cooldown=Math.max(0,s.cooldown-dt);s.active=Math.max(0,s.active-dt);
+  s.landing=Math.max(0,s.landing-dt);s.air=Math.max(0,s.air-dt);s.charge=Math.max(0,s.charge-dt);
+  if(wasAir&&s.air===0)s.landing=.28;
+  if(wasCharging&&s.charge===0)launch(s,'gadget');
+  const grip=s.tire==='road'?(surface==='road'?1:tuning.roughGrip):tuning.offroadGrip;
+  s.x+=Math.max(-1,Math.min(1,steer))*dt*tuning.steering*grip;
+  if(surface!=='road'&&s.air===0)s.x+=Math.sin(s.z*.11)*dt*(s.tire==='road'?.12:.025);
+  s.x=Math.max(-1.2,Math.min(1.2,s.x));
+  const off=Math.abs(s.x-center(s.z,s.trackId))>.55;
+  let target=s.tire==='road'?(surface==='road'?tuning.roadSpeed:tuning.roadRoughSpeed):(surface==='road'?tuning.offroadSpeed:tuning.offroadRoughSpeed);
+  target*=paceAt(s.time);
+  if(s.active>0)target*=tuning.boostMultiplier;
+  if(off&&s.air===0){target*=tuning.offroadRetention;s.offTime+=dt}
+  const bandIndex=track.bands.findIndex(z=>s.z>=z&&s.z<z+bandLength);
+  if(bandIndex>=0){
+   s.bandSeen.add(bandIndex);s.bandTime+=dt;
+   if(s.air===0){s.bandGrounded.add(bandIndex);if(!off){target=Math.min(target,tuning.bandSpeed);s.speed=Math.min(s.speed,tuning.bandSpeed);s.slowTime+=dt}}
+  }
+  // A brisk boost attack, then the normal smooth response on release. All world
+  // geometry still advances through this one distance; the renderer never fakes it.
+  s.speed+=(target-s.speed)*Math.min(1,dt*(s.active>0?tuning.boostResponse:tuning.response));s.z=Math.min(length,s.z+s.speed*dt);
+  track.bands.forEach((z,i)=>{
+   if(!s.bandDone.has(i)&&before<z+bandLength&&s.z>=z+bandLength){
+    s.bandDone.add(i);if(s.bandSeen.has(i)&&!s.bandGrounded.has(i)&&s.air>0)s.bandsCleared++;
+   }
+  });
+  track.ramps.forEach((r,i)=>{
+   if(!s.rampChecked.has(i)&&before<r.z&&s.z>=r.z){
+    s.rampChecked.add(i);
+    if(s.air===0&&Math.abs(s.x-center(r.z,s.trackId)-r.x)<.18){launch(s,'ramp');s.rampJumps++}
+   }
+  });
+  track.obstacles.forEach((o,i)=>{
+   if(!s.checked.has(i)&&before<o.z&&s.z>=o.z){
+    s.checked.add(i);
+    if(Math.abs(s.x-center(o.z,s.trackId)-o.x)<.21){if(s.air>0)s.cleared++;else{s.hits++;s.speed*=tuning.hitRetention}}
+    else s.dodged++;
+   }
+  });
+  s.segments[surface]+=dt;s.distance[surface]+=s.z-before;if(s.z>=length)s.phase='ended';
+ }
+ // Developer-only policy: no experiment controls or fake race results in the game UI.
+ function simulate(tire,gadget,trackId,policy='ramps'){
+  const s=create(tire,gadget,trackId),track=trackFor(trackId);
+  while(s.phase==='running'&&s.time<300){
+   const ramp=track.ramps.find(r=>r.z>s.z),obstacle=track.obstacles.find(o=>o.z>s.z);
+   let offset=policy==='ramps'&&ramp&&ramp.z-s.z<120?ramp.x:0;
+   // Do not dodge a later obstacle before reaching the nearer ramp, or react
+   // beyond the renderer's 160 * .76 forward view at the faster baseline.
+   if(policy!=='center'&&obstacle&&obstacle.z-s.z<Math.min(160*.76,Math.max(30,s.speed*1.5))&&!(policy==='ramps'&&ramp&&ramp.z<obstacle.z)){
+    if(Math.abs(offset-obstacle.x)<.28)offset=obstacle.x>=0?-.34:.34;
+   }
+   const nextBand=track.bands.find(z=>z>s.z),gap=nextBand===undefined?Infinity:nextBand-s.z;
+   if(policy!=='none'){
+    if(gadget==='boost'&&gap>s.speed*2.5&&!track.bands.some(z=>s.z>=z&&s.z<z+bandLength))activate(s);
+    if(gadget==='jump'&&policy!=='ramps'&&gap<=Math.max(2,s.speed*.4))activate(s);
+   }
+   step(s,1/120,(center(s.z+8,trackId)+offset-s.x)*tuning.dragGain);
+  }
+  return s;
+ }
+ return {tuning,length,lapLength,laps,tracks,trackFor,bandsFor,bandLength,jumpDuration,paceAt,surfaceAt,center,create,activate,step,simulate};
+})();
+</script>
+<script src="./playable-art.js?rev=boost-feel-01"></script>
+<script type="module">
+import { createLifecycle } from './lifecycle.js';
+const $=id=>document.getElementById(id),canvas=$('scene'),ctx=canvas.getContext('2d');
+const embedded=window.self!==window.top;
+const instanceId=Array.from(crypto.getRandomValues(new Uint32Array(4)),n=>n.toString(16)).join('-');
+const lifecycle=createLifecycle({embedded,instanceId,hostOrigin:location.origin,hostWindow:window.parent,
+ send:message=>window.parent.postMessage(message,location.origin)});
+function renderAuthorization(){
+ const phase=lifecycle.state.phase;
+ $('start').disabled=!GarageArt.isReady||(embedded&&phase!=='authorized')||phase==='exited';
+ $('start').textContent=phase==='exited'?'已退出':!GarageArt.isReady?'正在准备小车…':embedded&&phase==='waiting'?'等待宿主确认开局…':'触摸出发 →';
+ $('sessionStatus').textContent=phase==='exited'?'已退出，请从宿主重新进入。':embedded?(phase==='authorized'?'本局已授权。配好小车后，触摸出发。':'嵌入模式 · 开局与重玩均由宿主确认。'):'独立试玩 · 不扣费 · 记录仅保留在本页';
+}
+window.addEventListener('message',event=>{if(lifecycle.receive(event))renderAuthorization()});
+function exitGame(){
+ if(!lifecycle.exit())return;
+ pause();screen='exited';document.body.dataset.screen='exited';
+ for(const name of ['setup','drive','result'])$(name+'Screen').hidden=true;
+ $('sessionStatus').hidden=false;
+ $('exitGame').disabled=true;
+ renderAuthorization();
+}
+$('exitGame').hidden=!embedded;
+$('exitGame').onclick=exitGame;
+const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+let tire='road',gadget='boost',trackId='sprint',state=null,history=[],held=0,drag=null,last=0,screen='setup';
+const names={road:'公路胎',offroad:'越野胎',boost:'加速喷口',jump:'弹跳装置'},surfaces={road:'硬地直道',sand:'沙地弯道',gravel:'碎石路段'};
+function showScreen(next){
+ screen=next;document.body.dataset.screen=next;
+ for(const name of ['setup','drive','result'])$(name+'Screen').hidden=name!==next;
+ held=0;drag=null;window.scrollTo(0,0);
+ if(next==='setup'){renderSetup();$('setupTitle').focus({preventScroll:true})}
+ if(next==='result')$('resultTitle').focus({preventScroll:true});
+ render();
+}
+function choose(group,value){
+ if(screen!=='setup')return;
+ for(const b of $(group).querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.value===value));
+ if(group==='tires')tire=value;else if(group==='gadgets')gadget=value;else trackId=value;
+ renderSetup();render();
+}
+for(const group of ['tires','gadgets','trackChoices'])$(group).onclick=e=>{const b=e.target.closest('button');if(b)choose(group,b.dataset.value)};
+function renderSetup(){
+ const track=GarageModel.trackFor(trackId);
+ $('gameHero').src=GarageArt.heroURL(tire,gadget);$('gameHero').alt=`探索者玩具车：${names[tire]} × ${names[gadget]}`;
+ $('heroConfiguration').textContent=`${names[tire]} × ${names[gadget]}`;
+ $('activeIcon').src=GarageArt.assetURL(`icon-${gadget}.png`);
+ for(const [group,value] of [['tires',tire],['gadgets',gadget],['trackChoices',trackId]])for(const b of $(group).querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.value===value));
+ $('routeSummary').textContent=`${track.name} · ${GarageModel.length.toLocaleString('en-US')} 米 · ${track.obstacles.length} 个障碍 · ${track.bands.length} 段缓速带 · 以下路面顺序重复 ${GarageModel.laps} 段`;
+ let begin=0;$('routePreview').innerHTML=track.parts.filter(p=>p.end<=GarageModel.lapLength).map(p=>{const size=p.end-begin;begin=p.end;return `<span data-surface="${p.surface}" style="flex:${size}">${{road:'硬地',sand:'沙地',gravel:'碎石'}[p.surface]}</span>`}).join('');
+ $('routeTip').textContent=track.bands.length?'每段紫色缓速带前都有蓝色跳台。绕开橙白路障，再对准跳台自动飞越；没对准，也可用装置起跳或慢慢通过。':'没有缓速带，也要绕开橙白路障。观察空隙，在连续避让中找机会提速。';
+}
+function startRace(){
+ if(!GarageArt.isReady||document.hidden)return;
+ if(!embedded)lifecycle.startStandalone();
+ if(!lifecycle.activate())return;
+ state=GarageModel.create(tire,gadget,trackId);last=performance.now();
+ $('activeIcon').src=GarageArt.assetURL(`icon-${gadget}.png`);$('overlay').hidden=true;showScreen('drive');
+}
+$('start').onclick=e=>{if(e.isTrusted&&screen==='setup')startRace()};
+function requestReplay(){
+ if(state?.phase!=='ended'||!lifecycle.replay())return;
+ ({tire,gadget,trackId}=state);state=null;showScreen('setup');renderAuthorization();
+}
+$('replay').onclick=requestReplay;
+function pause(){
+ if(state?.phase==='running'){state.phase='paused';held=0;drag=null;$('overlay').hidden=false;$('overlayText').textContent='计时和车身动画都已暂停。准备好了，再继续。';render()}
+}
+$('pause').onclick=pause;
+$('resume').onclick=()=>{if(state?.phase==='paused'&&!document.hidden&&lifecycle.state.phase==='playing'){state.phase='running';last=performance.now();$('overlay').hidden=true;render()}};
+function backToSetup(){
+ if(embedded){exitGame();return}
+ // Abandoning a standalone trial closes it before returning to configuration.
+ lifecycle.finish();lifecycle.replay();state=null;$('overlay').hidden=true;showScreen('setup');renderAuthorization();
+}
+$('garage').textContent=embedded?'退出游戏':'返回车库';
+$('backToSetup').textContent=embedded?'退出游戏':'返回车库';
+$('garage').onclick=backToSetup;$('backToSetup').onclick=backToSetup;
+function useGadget(){if(state)GarageModel.activate(state);render()}
+// A second finger does not reliably produce click. Activate on pointerdown.
+$('activate').onpointerdown=e=>{if(e.pointerType==='mouse'&&e.button!==0)return;e.preventDefault();useGadget()};
+$('activate').onclick=e=>{if(e.detail===0)useGadget()};
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});window.addEventListener('blur',pause);
+for(const [id,dir] of [['left',-1],['right',1]]){
+ const b=$(id);b.onpointerdown=e=>{if(state?.phase!=='running')return;e.preventDefault();b.setPointerCapture(e.pointerId);held=dir};
+ b.onpointerup=b.onpointercancel=b.onlostpointercapture=()=>{if(held===dir)held=0};
+}
+canvas.onpointerdown=e=>{if(state?.phase!=='running'||drag)return;canvas.setPointerCapture(e.pointerId);drag={id:e.pointerId,px:e.clientX,x:state.x}};
+canvas.onpointermove=e=>{if(drag?.id===e.pointerId)drag.target=drag.x+(e.clientX-drag.px)/canvas.clientWidth*2.6};
+canvas.onpointerup=canvas.onpointercancel=canvas.onlostpointercapture=e=>{if(drag?.id===e.pointerId)drag=null};
+window.addEventListener('keydown',e=>{
+ if(e.target.closest('button,select,input')||screen!=='drive')return;
+ if(['ArrowLeft','ArrowRight',' '].includes(e.key)){e.preventDefault();if(e.key===' ')state&&GarageModel.activate(state);else held=e.key==='ArrowLeft'?-1:1}
+});
+window.addEventListener('keyup',e=>{if(e.key.startsWith('Arrow'))held=0});
+function finish(){
+ if(!lifecycle.finish())return;
+ const track=GarageModel.trackFor(state.trackId);history.unshift({...state});
+ $('history').innerHTML=history.map(s=>`<tr><td>${GarageModel.trackFor(s.trackId).name}</td><td>${names[s.tire]} + ${names[s.gadget]}</td><td>${s.time.toFixed(1)} 秒</td><td>${s.hits} 次</td></tr>`).join('');
+ $('resultTime').textContent=`${state.time.toFixed(1)} 秒 · 顺利冲线`;
+ $('resultConfig').textContent=`${track.name} · ${names[state.tire]} + ${names[state.gadget]}`;
+ const obstacles=`绕开 ${state.dodged} 个障碍，腾空越过 ${state.cleared} 个，碰到 ${state.hits} 个。`;
+ const bands=track.bands.length?`\n借跳台起跳 ${state.rampJumps} 次，完整飞越缓速带 ${state.bandsCleared} / ${track.bands.length} 段。触地减速 ${state.slowTime.toFixed(1)} 秒。`:'';
+ const advice=state.hits>2?'下一圈提前观察障碍空隙，稳稳绕过去。':track.bands.length&&state.rampJumps<track.ramps.length?'试试先绕开挡路的障碍，再对准蓝色跳台。':'这条路线已经熟悉了！再跑一遍挑战自己的用时，或者换条路线。';
+ $('feedback').textContent=`${obstacles}${bands}\n装置使用 ${state.used} 次，路外行驶 ${state.offTime.toFixed(1)} 秒。\n${advice}`;
+ showScreen('result');
+}
+function bandCue(s){
+ if(!s)return {label:'',jump:false};
+ const bands=GarageModel.bandsFor(s.trackId),inside=bands.some(z=>s.z>=z&&s.z<z+GarageModel.bandLength);
+ if(inside)return {label:s.air>0?'飞越缓速带 ↑':'缓速带 · 慢慢通过',jump:false};
+ const next=bands.find(z=>z>s.z),gap=next===undefined?Infinity:next-s.z;
+ const ready=s.gadget==='jump'&&s.cooldown===0&&s.air===0&&s.charge===0;
+ const jump=ready&&gap<=Math.max(2,s.speed*.45)&&gap>=s.speed*.14;
+ if(s.air>0)return {jump:false,label:s.jumpSource==='ramp'?'借跳台飞越 ↑':'主动弹跳 ↑'};
+ const ramp=GarageModel.trackFor(s.trackId).ramps.find(r=>r.z>s.z);
+ const label=jump?'现在跳！':ramp&&ramp.z-s.z<110?`${ramp.x<0?'左':'右'}侧蓝色跳台 · 先看障碍空隙`:gap<45?'缓速带在前 · 可慢慢通过':'';
+ return {jump,label};
+}
+function motion(s){
+ const air=s?.air>0,charge=s?.charge||0,landing=s?.landing||0;
+ const arc=air?Math.sin(Math.PI*Math.max(0,Math.min(1,1-s.air/s.airTotal))):0;
+ const rough=s&&s.air===0&&s.charge===0&&s.landing===0&&GarageModel.surfaceAt(s.z,s.trackId)==='gravel';
+ const strength=rough?Math.min(1,s.speed/12)*(s.tire==='road'?1:.3)*(reducedMotion.matches?.2:1):0;
+ // Short suspension pulses follow ground distance. No gravel yaw or side rocking.
+ const pulse=Math.pow(Math.sin(((s?.z||0)%7)/7*Math.PI),8)*strength;
+ return {arc,air,bump:-1.1*pulse,tilt:0,
+  squash:charge ? .22*Math.sin(Math.PI*(1-charge/GarageModel.tuning.jumpCharge)) : landing ? .17*Math.sin(Math.PI*(1-landing/.28)) : .045*pulse,
+  label:charge?'压缩蓄力':air?'腾空中 ↑':landing?'落地！':rough?'碎石 · '+(s.tire==='road'?'颠簸中':'稳稳通过'):s?.active>0?'加速中':''};
+}
+function render(){
+ const s=state,running=s?.phase==='running';
+ $('setupStatus').textContent=`${GarageModel.trackFor(trackId).name} · ${names[tire]} + ${names[gadget]}`;
+ $('raceName').textContent=s?GarageModel.trackFor(s.trackId).name:'MINI GARAGE';
+ const pace=GarageModel.paceAt(s?.time||0),extra=Math.round((pace-1)*100);
+ $('paceLabel').textContent=!s||s.time<=GarageModel.tuning.warmup?'热身':s.time<GarageModel.tuning.fullPaceAt?`渐进提速 +${extra}%`:`冲刺 +${extra}%`;
+ for(const id of ['pause','left','right'])$(id).disabled=!running;
+ $('activate').disabled=!running||s.cooldown>0||(s.gadget==='jump'&&s.air>0);
+ const cue=bandCue(s);$('activate').dataset.cue=String(running&&cue.jump);
+ $('activeLabel').textContent=!s?'装置待命':s.active>0?'冲刺中！':s.cooldown>0?`${names[s.gadget]} ${s.cooldown.toFixed(1)}s`:s.gadget==='jump'?(cue.jump?'现在跳！':'弹跳！'):'加速！';
+ $('surface').textContent=s?surfaces[GarageModel.surfaceAt(s.z,s.trackId)]:'车库待命';
+ $('clock').textContent=`${(s?.time||0).toFixed(1)} 秒`;$('speed').textContent=`${Math.round((s?.speed||0)*3.6)} km/h`;$('progress').max=GarageModel.length;$('progress').value=s?.z||0;
+ $('telemetry').textContent=s?`状态：${{running:'驾驶中',paused:'已暂停',ended:'已完成'}[s.phase]} · ${names[s.tire]} / ${names[s.gadget]} · ${Math.floor(s.z)} / ${GarageModel.length}m · 碰障 ${s.hits} · 路外 ${s.offTime.toFixed(1)}s`:'状态：配车';
+}
+function draw(){
+ if(screen!=='drive'||!state||!GarageArt.isReady)return;
+ const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;
+ const dpr=Math.min(devicePixelRatio||1,2);
+ if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr)}
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ const m=motion(state);
+ GarageArt.draw(ctx,{w,h,state,model:GarageModel,motion:m,steer:held,reduced:reducedMotion.matches,label:bandCue(state).label||m.label});
+}
+function frame(now){
+ const dt=Math.min((now-last)/1000||0,.05);last=now;
+ if(state?.phase==='running'){
+  let remaining=dt;
+  while(remaining>0){const step=Math.min(remaining,1/120),steering=drag?((drag.target??drag.x)-state.x)*GarageModel.tuning.dragGain:held;GarageModel.step(state,step,steering);remaining-=step}
+  if(state.phase==='ended')finish();
+ }
+ if(screen==='drive'){render();draw()}
+ requestAnimationFrame(frame);
+}
+async function prepareAssets(){
+ $('start').disabled=true;$('start').textContent='正在准备小车…';$('retryAssets').hidden=true;$('assetStatus').textContent='正在准备本地美术素材…';
+ try{await GarageArt.load();lifecycle.ready();renderAuthorization();$('assetStatus').textContent='小车准备好了。碰到路障只会减速，可以继续开。'}
+ catch{$('start').textContent='素材尚未准备好';$('assetStatus').textContent='有素材没有加载成功。请检查网络后重试；直接打开文件时需保留旁边的资源目录。';$('retryAssets').hidden=false}
+}
+$('retryAssets').onclick=prepareAssets;
+renderSetup();render();prepareAssets();requestAnimationFrame(frame);
+</script>
+</body></html>

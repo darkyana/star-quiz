@@ -1,0 +1,31 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "star-quiz-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+  // #310 anonymous counters: never retain invocation/request logs in application-controlled sinks.
+  "logpush": false,
+  "observability": { "enabled": false },
+  "tail_consumers": [],
+  // CORS 允许源（精确匹配单源）：自部署时换成你自己的站点域名。
+  "vars": {
+    "ALLOWED_ORIGIN": "https://starquiz.link"
+  },
+  // 自部署时换成你自己的自定义域；删除 routes 则不绑域，仅 wrangler dev / workers.dev 可用。
+  "routes": [
+    { "pattern": "api.starquiz.link", "custom_domain": true }
+  ],
+  // 每日快照 Cron：UTC 20:00 = 北京时间次日凌晨 04:00（业务低峰）。
+  "triggers": {
+    "crons": ["0 20 * * *"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "star-quiz-sync",
+      // 展厅占位值：自部署时换成 `wrangler d1 create` 产出的真实 database_id。
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

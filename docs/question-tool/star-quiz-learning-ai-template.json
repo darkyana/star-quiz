@@ -1,0 +1,61 @@
+{
+  "version": "3.0",
+  "exportedAt": "2026-09-01T00:00:00.000Z",
+  "questionPool": [
+    {
+      "id": "000001",
+      "type": "zh2en",
+      "prompt": "博物馆",
+      "options": ["library", "hospital", "museum", "cinema"],
+      "answerIndex": 2,
+      "wordId": "museum",
+      "difficulty": 1
+    },
+    {
+      "id": "000002",
+      "type": "zh2en",
+      "prompt": "美味的",
+      "options": ["delicious", "dangerous", "different", "difficult"],
+      "answerIndex": 0,
+      "wordId": "delicious",
+      "difficulty": 2
+    },
+    {
+      "id": "000003",
+      "type": "en2zh",
+      "prompt": "island",
+      "options": ["岛屿", "陆地", "沙滩", "森林"],
+      "answerIndex": 0,
+      "wordId": "island",
+      "difficulty": 1
+    },
+    {
+      "id": "000004",
+      "type": "en2zh",
+      "prompt": "vegetable",
+      "options": ["水果", "蔬菜", "肉类", "零食"],
+      "answerIndex": 1,
+      "wordId": "vegetable",
+      "difficulty": 2
+    },
+    {
+      "id": "000005",
+      "type": "cloze",
+      "prompt": "We ___ the museum last Sunday.",
+      "options": ["visit", "visited", "visits", "visiting"],
+      "answerIndex": 1,
+      "wordId": "visited",
+      "difficulty": 2
+    },
+    {
+      "id": "000006",
+      "type": "cloze",
+      "prompt": "We swam in the sea and played on the ___.",
+      "options": ["beach", "bus", "bottle", "bridge"],
+      "answerIndex": 0,
+      "wordId": "beach"
+    }
+  ],
+  "flagged": {},
+  "questionResults": {}
+}

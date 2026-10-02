@@ -1,0 +1,23 @@
+node_modules
+dist
+dist-minitool
+star-quiz-minitool.zip
+coverage
+*.local
+.DS_Store
+npm-debug.log*
+.claude/
+
+# 概念图生成工具产物（非产品文件）
+image_generate/
+media-output/
+
+.rooms/
+
+# 展厅同步的一次性克隆（tools/gallery-sync.mjs，ADR 0018）
+.gallery/
+
+# impeccable 技能运行产物（可再生的 critique/截图缓存）
+.impeccable/
+.preview/
+.worktrees/
